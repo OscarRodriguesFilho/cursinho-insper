@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Marketing – Enviar/Selecionar Arquivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonte opcional -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --sidebar-w: 260px; }
+    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans' }
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+
+    .sidebar { width: var(--sidebar-w); transform: translateX(-100%); transition: transform .25s ease; }
+    body.sidebar-open .sidebar { transform: translateX(0); }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.45);
+      opacity: 0; pointer-events: none; transition: opacity .2s ease;
+      backdrop-filter: blur(2px); z-index: 30;
+    }
+    body.sidebar-open .overlay { opacity: 1; pointer-events: auto; }
+
+    .fab-open { position: fixed; top: 1rem; left: 1rem; z-index: 50; transition: opacity .2s ease; }
+    body.sidebar-open .fab-open { opacity: 0; pointer-events: none; }
+
+    /* Dropzone visual */
+    .dropzone {
+      border: 2px dashed #cbd5e1; /* slate-300 */
+      border-radius: 0.75rem;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .dropzone.dragover {
+      background: #f8fafc; /* slate-50/100 */
+      border-color: #3b82f6; /* blue-500 */
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+
+  <!-- Botão flutuante de abrir menu -->
+  <button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+          aria-label="Abrir menu">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
+    </svg>
+  </button>
+
+  <!-- Overlay -->
+  <div class="overlay"></div>
+
+  <!-- Sidebar (mesma identidade) -->
+  <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
+    <div class="h-full flex flex-col">
+      <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold leading-5">Simulados</div>
+          <div class="text-[11px] text-slate-500">Marketing</div>
+        </div>
+        <button id="btnClose" class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto px-2 py-3">
+        <ul class="space-y-1">
+          <li><a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Início</span>
+          </a></li>
+
+          <li><a href="/dashboard_marketing" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg>
+            <span>Dashboard Marketing</span>
+          </a></li>
+        </ul>
+      </nav>
+
+      <div class="mt-auto border-t border-slate-200 px-2 py-3">
+        <a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+          <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg>
+          <span>Voltar ao início</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Conteúdo principal -->
+  <main class="mx-auto max-w-4xl px-6">
+    <h1 class="pt-8 text-2xl font-semibold tracking-tight">Marketing – Enviar/Selecionar Arquivo</h1>
+
+    <!-- Cartão: Upload -->
+    <section class="mt-6">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div class="border-b border-slate-200 px-6 py-5">
+          <h2 class="text-lg font-semibold text-slate-900">Enviar arquivo de dados (.xlsx / .xls)</h2>
+          <p class="mt-1 text-sm text-slate-600">
+            O arquivo será salvo em <code class="px-1.5 py-0.5 rounded bg-slate-100">uploads_marketing/</code>.
+            Após o envio, você será direcionado para o dashboard.
+          </p>
+        </div>
+
+        <form id="uploadForm" method="POST" action="/upload_marketing" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
+          <div id="dropzone" class="dropzone bg-white p-6 flex flex-col items-center justify-center text-center cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.35 10.04A7.49 7.49 0 005.5 8.5a5.5 5.5 0 00-1.1 10.89H19a4 4 0 00.35-7.95zM11 14v4h2v-4h3l-4-4-4 4h3z"/>
+            </svg>
+            <p class="mt-3 text-sm text-slate-600">
+              Arraste e solte o arquivo aqui, ou
+              <label for="fileInput" class="text-blue-600 font-medium cursor-pointer hover:underline">clique para selecionar</label>.
+            </p>
+            <p class="mt-1 text-xs text-slate-500">Aceita <strong>.xlsx</strong> e <strong>.xls</strong>.</p>
+
+            <input id="fileInput" type="file" name="file" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" required>
+            <div id="fileInfo" class="mt-3 text-sm text-slate-700 hidden"></div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3">
+            <a href="/" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+              Cancelar
+            </a>
+            <button type="submit" class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">
+              Enviar e abrir dashboard
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Cartão: Selecionar existente -->
+      <div class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div class="border-b border-slate-200 px-6 py-5">
+          <h2 class="text-lg font-semibold text-slate-900">Usar arquivo existente</h2>
+          <p class="mt-1 text-sm text-slate-600">Arquivos detectados em <code class="px-1 rounded bg-slate-100">uploads_marketing/</code>.</p>
+        </div>
+
+        <form method="POST" action="/dashboard_marketing" class="px-6 py-6 space-y-6" id="form-existentes">
+          <div>
+            <label for="arquivo" class="mb-2 block text-sm font-medium text-slate-700">Arquivo</label>
+            <div class="relative">
+              <select id="arquivo" name="arquivo" required class="focus-ring block w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 pr-10 text-slate-900 shadow-sm transition hover:border-slate-400 focus:border-blue-500">
+                {% for a in arquivos %}
+                  <option value="{{ a }}">{{ a }}</option>
+                {% endfor %}
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3">
+            <a href="/dashboard_marketing" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+              Abrir padrão
+            </a>
+            <button type="submit" class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">
+              Abrir selecionado
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mx-auto mt-12 max-w-4xl px-6 pb-10 text-center text-xs text-slate-400">
+    © <span id="year"></span> Marketing — Upload & Dashboard.
+  </footer>
+
+  <script>
+    // Ano
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sidebar overlay
+    const body = document.body;
+    const btnOpen = document.getElementById('btnOpen');
+    const btnClose = document.getElementById('btnClose');
+    const overlay = document.querySelector('.overlay');
+    const toggleSidebar = () => body.classList.toggle('sidebar-open');
+    const closeSidebar = () => body.classList.remove('sidebar-open');
+    btnOpen?.addEventListener('click', toggleSidebar);
+    btnClose?.addEventListener('click', closeSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+    // Drag & Drop + validação
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadForm = document.getElementById('uploadForm');
+
+    const setFile = (file) => {
+      if (!file) return;
+      const ok = /\.(xlsx|xls)$/i.test(file.name);
+      if (!ok) {
+        alert('Selecione um arquivo .xlsx ou .xls.');
+        fileInput.value = '';
+        fileInfo.classList.add('hidden');
+        fileInfo.textContent = '';
+        return;
+      }
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      fileInfo.textContent = `Selecionado: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+      fileInfo.classList.remove('hidden');
+    };
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => setFile(e.target.files?.[0]));
+
+    ['dragenter','dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave','drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      setFile(file);
+    });
+
+    uploadForm.addEventListener('submit', (e) => {
+      const f = fileInput.files?.[0];
+      if (!f || !/\.(xlsx|xls)$/i.test(f.name)) {
+        e.preventDefault();
+        alert('Selecione um arquivo .xlsx ou .xls válido antes de enviar.');
+      }
+    });
+  </script>
+</body>
+</html>

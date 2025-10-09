@@ -24,6 +24,9 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 ALLOWED_EXTENSIONS = {'xlsx'}
 GABARITO_FILENAME = 'resultado_corrigido.xlsx'
 
+# Pasta de marketing (nova)
+MARKETING_UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads_marketing')
+
 # Parâmetros do detector (baseado no seu script)
 DETECT_CFG = {
     "IMG_CANDIDATES": ("image.png", "image.jpg", "image.jpeg", "image.webp"),
@@ -42,6 +45,7 @@ DETECT_CFG = {
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(MARKETING_UPLOAD_FOLDER, exist_ok=True)
 
 # SECRET_KEY do .env (obrigatório em produção)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
@@ -118,6 +122,11 @@ def logout():
 @login_required
 def serve_upload(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/uploads_marketing/<path:filename>')
+@login_required
+def serve_upload_marketing(filename):
+    return send_from_directory(MARKETING_UPLOAD_FOLDER, filename)
 
 @app.route('/root/<path:filename>')
 @login_required
@@ -516,7 +525,7 @@ def dashboard():
         acertos_por_questao, top3_por_questao = [], []
         for c in quest_cols:
             col_series = alunos_df[c]
-            cont = Counter([str(v) for v in col_series.dropna().tolist()])
+            cont = Counter([str(v) for v in col_series.dropna().tolist() ])
             correto = str(gabarito.get(c))
             acertos = int(sum(1 for v in col_series if str(v) == correto))
             acertos_por_questao.append(acertos)
@@ -576,19 +585,58 @@ def dashboard():
 
 # ===================== Dashboard de Marketing =====================
 
+def allowed_file_marketing(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'xlsx', 'xls'}
+
+@app.route('/upload_marketing', methods=['GET'])
+@login_required
+def upload_marketing_page():
+    arquivos = [f for f in os.listdir(MARKETING_UPLOAD_FOLDER)
+                if f.lower().endswith(('.xlsx', '.xls'))]
+    return render_template('upload_marketing.html', arquivos=arquivos)
+
+@app.route('/upload_marketing', methods=['POST'])
+@login_required
+def upload_marketing_post():
+    if 'file' not in request.files:
+        return 'Nenhum arquivo enviado.', 400
+    file = request.files['file']
+    if file.filename == '':
+        return 'Nome do arquivo vazio.', 400
+    if not allowed_file_marketing(file.filename):
+        return '❌ Tipo de arquivo não permitido. Envie .xlsx ou .xls.', 400
+
+    filename = file.filename
+    savepath = os.path.join(MARKETING_UPLOAD_FOLDER, filename)
+    file.save(savepath)
+
+    # Redireciona para o dashboard já focado no arquivo
+    return redirect(url_for('dashboard_marketing', arquivo=filename))
+
 @app.route('/dashboard_marketing', methods=['GET', 'POST'])
 @login_required
 def dashboard_marketing():
-    uploads_dir = os.path.join(app.root_path, 'uploads_marketing')
-    if not os.path.isdir(uploads_dir):
-        os.makedirs(uploads_dir, exist_ok=True)
-    arquivos = [f for f in os.listdir(uploads_dir) if f.lower().endswith(('.xlsx', '.xls'))]
-    arquivo = request.form.get('arquivo') or (arquivos[0] if arquivos else None)
-    if not arquivo:
-        return render_template('dashboard_marketing.html', arquivos=arquivos, arquivo=None,
-                               erro="Nenhum arquivo encontrado em uploads_marketing.")
+    uploads_dir = MARKETING_UPLOAD_FOLDER
+    os.makedirs(uploads_dir, exist_ok=True)
 
-    df = pd.read_excel(os.path.join(uploads_dir, arquivo))
+    # GET sem arquivo selecionado -> vai para a página de upload/seleção
+    if request.method == 'GET' and not request.args.get('arquivo'):
+        return redirect(url_for('upload_marketing_page'))
+
+    # Aceita arquivo via POST (form) ou via GET (?arquivo=...)
+    arquivo = request.form.get('arquivo') or request.args.get('arquivo')
+
+    # Se ainda não há arquivo definido (ou não existe), volta para a seleção
+    if not arquivo:
+        return redirect(url_for('upload_marketing_page'))
+    fullpath = os.path.join(uploads_dir, arquivo)
+    if not os.path.isfile(fullpath):
+        # arquivo informado não existe mais; volta para escolha
+        return redirect(url_for('upload_marketing_page'))
+
+    # --------- A partir daqui mantém sua lógica atual ---------
+    arquivos = [f for f in os.listdir(uploads_dir) if f.lower().endswith(('.xlsx', '.xls'))]
+    df = pd.read_excel(fullpath)
 
     rename_map = {
         'Data do Post':'data','Plataforma':'plataforma','Tipo de Conteúdo':'tipo','Tema do Post':'tema',
@@ -603,9 +651,7 @@ def dashboard_marketing():
     num_cols = ['impressoes','views','curtidas','comentarios','compart','cliques_link','salvamentos','cliques_perfil','eficiencia','engajamento']
     for c in num_cols:
         if c not in df.columns: df[c] = np.nan
-        df[c] = (df[c].astype(str)
-                    .str.replace('.', '', regex=False)
-                    .str.replace(',', '.', regex=False))
+        df[c] = (df[c].astype(str).str.replace('.', '', regex=False).str.replace(',', '.', regex=False))
         df[c] = pd.to_numeric(df[c], errors='coerce')
 
     for c in ['plataforma','tipo','tema','turbinado','publico','link','data']:
@@ -661,7 +707,7 @@ def dashboard_marketing():
         return {
             'Média': float(s.mean()),
             'Desvio Padrão': float(s.std(ddof=1)) if len(s)>1 else 0.0,
-            'Variação Percentual': float((s.max()-s.min())/s.min()*100) if s.min() not in [0,np.nan] else 0.0,
+            'Variação Percentual': float((s.max()-s.min())/max(s.min(), 1e-9)*100),
             'Máximo': float(s.max()),
             'Mínimo': float(s.min()),
             'Q1': float(s.quantile(0.25)),
@@ -692,7 +738,7 @@ def dashboard_marketing():
         'cliques_link': safe_list(fdf['cliques_link'].fillna(0).tolist()),
         'compart': safe_list(fdf['compart'].fillna(0).tolist()),
         'salvamentos': safe_list(fdf['salvamentos'].fillna(0).tolist()),
-        'top5_labels': safe_list([])  # preenchido abaixo
+        'top5_labels': safe_list([])
     }
     top5 = fdf[['label','eficiencia']].dropna().sort_values('eficiencia', ascending=False).head(5)
     charts_payload['top5'] = {
@@ -701,7 +747,9 @@ def dashboard_marketing():
     }
 
     display_cols = list(df.columns)
-    if 'link' not in display_cols: df['link'] = '' ; display_cols.append('link')
+    if 'link' not in display_cols:
+        df['link'] = ''
+        display_cols.append('link')
     tabela = fdf[display_cols].fillna('').to_dict(orient='records')
 
     try:
@@ -711,13 +759,16 @@ def dashboard_marketing():
         ate_data = ''
 
     return render_template('dashboard_marketing.html',
-                           arquivos=arquivos, arquivo=arquivo,
+                           arquivos=[f for f in os.listdir(uploads_dir) if f.lower().endswith(('.xlsx', '.xls'))],
+                           arquivo=arquivo,
                            filtros_opts=filtros_opts, sel=sel,
                            charts_payload=charts_payload,
                            metrics_table=metrics_table,
                            tabela=tabela,
                            ate_data=ate_data,
                            erro=None)
+
+# =========================================================
 
 if __name__ == '__main__':
     app.run(debug=True)
