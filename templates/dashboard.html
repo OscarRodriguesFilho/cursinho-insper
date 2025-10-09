@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard do Simulado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --sidebar-w: 260px; }
+    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans' }
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+
+    /* Sidebar overlay (não desloca conteúdo) */
+    .sidebar { width: var(--sidebar-w); transform: translateX(-100%); transition: transform .25s ease; }
+    body.sidebar-open .sidebar { transform: translateX(0); }
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; backdrop-filter: blur(2px); z-index: 30; }
+    body.sidebar-open .overlay { opacity: 1; pointer-events: auto; }
+
+    /* Botão flutuante menu */
+    .fab-open { position: fixed; top: 1rem; left: 1rem; z-index: 50; transition: opacity .2s ease; }
+    body.sidebar-open .fab-open { opacity: 0; pointer-events: none; }
+
+    /* Tabela */
+    thead th.sticky-head { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
+
+    /* Carrossel */
+    .carousel-container { display: flex; overflow-x: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
+    .carousel-item { flex: 0 0 100%; scroll-snap-align: start; padding: 0 .25rem; }
+
+    /* Modais */
+    .modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(2,6,23,.45); backdrop-filter: blur(3px); }
+    .modal-hidden { display: none !important; }
+
+    /* FAB Raposa Smart — quadrado, imagem sem cortes */
+    /* FAB Raposa Smart — círculo, imagem sem cortes */
+.raposa-fab{
+  position: fixed; right: 1rem; bottom: 1rem; z-index: 60;
+  width: 104px; height: 104px; /* ajuste como preferir */
+}
+@media (max-width: 640px){
+  .raposa-fab{ width: 88px; height: 88px; }
+}
+
+   
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+
+  <!-- Botão flutuante de abrir menu -->
+  <button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50" aria-label="Abrir menu">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+  </button>
+
+  <!-- Overlay -->
+  <div class="overlay"></div>
+
+  <!-- Sidebar (mesma das outras páginas) -->
+  <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
+    <div class="h-full flex flex-col">
+      <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold leading-5">Simulados</div>
+          <div class="text-[11px] text-slate-500">Dashboard</div>
+        </div>
+        <button id="btnClose" class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/></svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto px-2 py-3">
+        <ul class="space-y-1">
+          <li><a href="#" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Início</span></a></li>
+          <li><a href="#" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg><span>Arquivos</span></a></li>
+          <li><a href="#" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg><span>Alunos</span></a></li>
+          <li><a href="#" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v12l4-4h12a2 2 0 002-2V5c0-1.1-.9-2-2-2z"/></svg><span>Mensagens</span></a></li>
+          <li><a href="#" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3L7 8l5 5V9c2.76 0 5 2.24 5 5a5 5 0 11-5-7z"/></svg><span>Relatórios</span></a></li>
+        </ul>
+      </nav>
+
+      <div class="mt-auto border-t border-slate-200 px-2 py-3">
+        <a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg><span>Voltar ao início</span></a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Conteúdo principal -->
+  <main class="mx-auto max-w-6xl px-6">
+    <div class="pt-8 flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-semibold tracking-tight">Dashboard — {{ arquivo }}</h1>
+      <div class="flex items-center gap-2">
+        <button id="btnReport" class="focus-ring inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          Gerar relatório
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtro de modalidade -->
+    <form method="POST" class="mt-4 mb-6 inline-flex items-center gap-3">
+      <label for="modalidade" class="text-sm font-medium text-slate-700">Modalidade:</label>
+      <select name="modalidade" id="modalidade" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()">
+        <option value="Geral" {% if modalidade_filtro == 'Geral' %}selected{% endif %}>Geral</option>
+        <option value="Presencial" {% if modalidade_filtro == 'Presencial' %}selected{% endif %}>Presencial</option>
+        <option value="Online" {% if modalidade_filtro == 'Online' %}selected{% endif %}>Online</option>
+      </select>
+      <input type="hidden" name="arquivo" value="{{ arquivo }}">
+    </form>
+
+    <!-- KPIs -->
+    <section class="grid grid-cols-12 gap-4">
+      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Alunos</div><div class="mt-1 text-2xl font-semibold">{{ total_alunos }}</div></div></div>
+      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Questões</div><div class="mt-1 text-2xl font-semibold">{{ total_questoes }}</div></div></div>
+      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Média (0–10)</div><div class="mt-1 text-2xl font-semibold">{{ media_nota }}</div></div></div>
+      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Mediana (0–10)</div><div class="mt-1 text-2xl font-semibold">{{ mediana_nota }}</div></div></div>
+
+      <!-- Top 10 melhores -->
+      <div class="col-span-12 md:col-span-6">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-base font-semibold text-slate-900">Top 10 melhores</h3>
+          <div class="mt-3 max-h-[360px] overflow-auto rounded-lg border border-slate-200">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50">
+                <tr class="text-slate-600">
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Nome</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Acertos</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Domínio</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Chutes</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Dificuldade</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for r in top_melhores %}
+                <tr>
+                  <td class="px-3 py-2">{{ r['Nome completo:'] }}</td>
+                  <td class="px-3 py-2 font-semibold text-emerald-700">{{ r['acertos'] }}</td>
+                  <td class="px-3 py-2">{{ r['O quanto você sente que dominava o conteúdo da avaliação:'] }}</td>
+                  <td class="px-3 py-2">{{ r['De 1 a 5, quantas perguntas você chutou?'] }}</td>
+                  <td class="px-3 py-2">{{ r['Matéria com maior dificuldade:'] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top 10 piores -->
+      <div class="col-span-12 md:col-span-6">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-base font-semibold text-slate-900">Top 10 piores</h3>
+          <div class="mt-3 max-h-[360px] overflow-auto rounded-lg border border-slate-200">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50">
+                <tr class="text-slate-600">
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Nome</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Acertos</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Domínio</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Chutes</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Dificuldade</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for r in top_piores %}
+                <tr>
+                  <td class="px-3 py-2">{{ r['Nome completo:'] }}</td>
+                  <td class="px-3 py-2 font-semibold text-rose-700">{{ r['acertos'] }}</td>
+                  <td class="px-3 py-2">{{ r['O quanto você sente que dominava o conteúdo da avaliação:'] }}</td>
+                  <td class="px-3 py-2">{{ r['De 1 a 5, quantas perguntas você chutou?'] }}</td>
+                  <td class="px-3 py-2">{{ r['Matéria com maior dificuldade:'] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranking completo -->
+      <div class="col-span-12">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-base font-semibold text-slate-900">Quanto cada um acertou</h3>
+
+            <div class="flex items-center gap-2">
+              <!-- Busca -->
+              <div class="relative">
+                <input id="searchAluno" type="text" placeholder="Pesquisar aluno..."
+                       class="focus-ring w-64 max-w-[70vw] rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm"
+                       aria-label="Pesquisar por nome do aluno">
+                <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 20l-5.6-5.6a7 7 0 10-1.4 1.4L20 21l1-1zM5 10a5 5 0 1110 0A5 5 0 015 10z"/>
+                </svg>
+              </div>
+
+              <!-- Mensagens (abre modal vazio) -->
+              <button id="btnMensagens" class="focus-ring inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12l4-4h14a2 2 0 002-2V6a2 2 0 00-2-2z"/></svg>
+                Mensagens
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-3 max-h-[420px] overflow-auto rounded-lg border border-slate-200">
+            <table class="w-full text-sm" id="rankingTable">
+              <thead class="bg-slate-50">
+                <tr class="text-slate-600">
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Posição</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Nome</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Acertos</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Total</th>
+                  <th class="sticky-head px-3 py-2 text-left font-medium">Nota</th>
+                  <th class="sticky-head px-3 py-2 text-right font-medium">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100" id="rankingBody">
+                {% for r in ranking %}
+                {% set email = r.get('Endereço de email') or r.get('Email') %}
+                <tr data-email="{{ email }}" data-nome="{{ r['Nome completo:'] }}">
+                  <td class="px-3 py-2 font-semibold text-slate-700">{{ loop.index }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap">{{ r['Nome completo:'] }}</td>
+                  <td class="px-3 py-2 font-semibold">{{ r['acertos'] }}</td>
+                  <td class="px-3 py-2">{{ r['total'] }}</td>
+                  <td class="px-3 py-2">{{ r['nota'] }}</td>
+                  <td class="px-3 py-2 text-right">
+                    <!-- alinhado “colado” à direita -->
+                    <div class="inline-flex justify-end gap-2">
+                      <!-- Enviar e-mail -->
+                      <button class="focus-ring inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                              title="Enviar e-mail" onclick="openCompose(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm-1.4 3L12 12.25 5.4 7h13.2zM20 18H4V8l8 6 8-6v10z"/>
+                        </svg>
+                        Enviar
+                      </button>
+                      <!-- Perfil social -->
+                      <button class="focus-ring inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                              title="Perfil social" onclick="openPerfil(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19 3H5a2 2 0 00-2 2v14l4-4h12a2 2 0 002-2V5a2 2 0 00-2-2zm-8 8a3 3 0 110-6 3 3 0 010 6zm-5 4c0-2 4-3.1 5-3.1s5 1.1 5 3.1v1H6v-1z"/>
+                        </svg>
+                        Perfil social
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-2 text-xs text-slate-500">
+            <span id="resultadoBusca">Mostrando <span id="countVisiveis">{{ ranking|length }}</span> de {{ ranking|length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- % de acerto por área (ordenado e colorido) -->
+      <div class="col-span-12">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-base font-semibold text-slate-900">% de acerto por área</h3>
+          <div class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {% for a in perc_por_area|sort(attribute='perc', reverse=True) %}
+              {% if a.perc >= 80 %}
+                {% set box = 'bg-emerald-50 border-emerald-200' %}{% set txt = 'text-emerald-700' %}
+              {% elif a.perc >= 50 %}
+                {% set box = 'bg-amber-50 border-amber-200' %}{% set txt = 'text-amber-700' %}
+              {% else %}
+                {% set box = 'bg-rose-50 border-rose-200' %}{% set txt = 'text-rose-700' %}
+              {% endif %}
+            <div class="rounded-xl border {{ box }} px-4 py-3">
+              <div class="text-xs uppercase tracking-wide text-slate-600">{{ a.area }}</div>
+              <div class="mt-1 text-xl font-semibold {{ txt }}">{{ a.perc }}%</div>
+            </div>
+            {% endfor %}
+          </div>
+          <p class="mt-2 text-xs text-slate-500">Cores por faixa: <span class="text-emerald-700 font-medium">≥80%</span>, <span class="text-amber-700 font-medium">50–79%</span>, <span class="text-rose-700 font-medium">&lt;50%</span>.</p>
+        </div>
+      </div>
+
+      <!-- Carrossel de gráficos -->
+      <div class="col-span-12">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-base font-semibold text-slate-900">Desempenho por área</h3>
+          <div class="mt-3">
+            <div id="carouselArea" class="carousel-container">
+              {% for g in grupos %}
+              <div class="carousel-item">
+                <h4 class="text-sm font-semibold text-slate-800">{{ g.titulo }}</h4>
+                <div class="mt-2"><canvas id="chart_{{ loop.index }}" height="320"></canvas></div>
+                <div class="mt-3 max-h-[300px] overflow-auto rounded-lg border border-slate-200">
+                  <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                      <tr class="text-slate-600">
+                        <th class="sticky-head px-3 py-2 text-left font-medium">Questão</th>
+                        <th class="sticky-head px-3 py-2 text-left font-medium">Mais marcados</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      {% for j in range(g.intervalo[0], g.intervalo[1]) %}
+                      {% set t3 = top3_por_questao[j] %}
+                      <tr>
+                        <td class="px-3 py-2">Q{{ j+1 }}</td>
+                        <td class="px-3 py-2 space-x-2">
+                          {% set correta = t3.correta|string %}
+                          {% for item in t3.top3 %}
+                            {% set alt = item[0]|string %}{% set cnt = item[1] %}
+                            {% if alt == correta %}
+                              <span class="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-800 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
+                            {% elif loop.index == 1 %}
+                              <span class="inline-block rounded-full bg-rose-100 px-2 py-0.5 text-rose-800 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
+                            {% else %}
+                              <span class="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-amber-800 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
+                            {% endif %}
+                          {% endfor %}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="mt-3 flex items-center justify-between">
+              <button class="focus-ring inline-flex items-center rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900" onclick="moveSlide(-1)">⬅ Anterior</button>
+              <button class="focus-ring inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="moveSlide(1)">Próxima ➡</button>
+            </div>
+            <p class="mt-2 text-xs text-slate-500 text-center">Atalho: use as setas do teclado (← →) para navegar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mx-auto mt-12 max-w-6xl px-6 pb-10 text-center text-xs text-slate-400">
+    © <span id="year"></span> Simulados — Todos os direitos reservados.
+  </footer>
+
+  <!-- FAB Raposa Smart (quadrado, imagem inteira) -->
+  <button id="btnRaposaFab"
+  class="raposa-fab focus-ring rounded-full border border-slate-200 bg-white p-3 shadow-lg hover:shadow-xl"
+  title="Falar com a Raposa Smart">
+  <img src="https://cursinhoinsper.org/assets/images/image03.png?v=072e23cf"
+       alt="Raposa Smart"
+       class="h-full w-full object-contain" />
+</button>
+
+
+  <!-- Modal Mensagens -->
+  <div id="composeModal" class="modal-backdrop modal-hidden">
+    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h3 class="text-base font-semibold text-slate-900">Nova mensagem</h3>
+          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeCompose()">✕</button>
+        </div>
+        <div class="px-4 py-4 space-y-3">
+          <div><label for="composePara" class="block text-xs font-medium text-slate-600">Para</label><input id="composePara" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="email@exemplo.com"><p id="composeNomeHint" class="mt-1 text-[11px] text-slate-500"></p></div>
+          <div><label for="composeAssunto" class="block text-xs font-medium text-slate-600">Assunto</label><input id="composeAssunto" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Assunto da mensagem"></div>
+          <div><label for="composeMsg" class="block text-xs font-medium text-slate-600">Mensagem</label><textarea id="composeMsg" rows="6" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Digite sua mensagem..."></textarea></div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
+          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeCompose()">Cancelar</button>
+          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="sendCompose()">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Relatório -->
+  <div id="reportModal" class="modal-backdrop modal-hidden">
+    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div class="w-full sm:max-w-md rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h3 class="text-base font-semibold text-slate-900">Gerar relatório</h3>
+          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeReport()">✕</button>
+        </div>
+        <div class="px-4 py-4 space-y-4">
+          <div><label class="block text-xs font-medium text-slate-600">Formato</label><select id="reportFormato" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="pdf">PDF</option><option value="csv">CSV</option><option value="xlsx">XLSX</option></select></div>
+          <div><label class="block text-xs font-medium text-slate-600">Conteúdo</label><div class="mt-2 space-y-2 text-sm text-slate-700"><label class="flex items-center gap-2"><input type="checkbox" id="rResumo" class="rounded border-slate-300" checked> Resumo (KPIs, rankings)</label><label class="flex items-center gap-2"><input type="checkbox" id="rAreas" class="rounded border-slate-300" checked> % de acerto por área</label><label class="flex items-center gap-2"><input type="checkbox" id="rGraficos" class="rounded border-slate-300" checked> Gráficos por área</label></div></div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
+          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeReport()">Cancelar</button>
+          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-900" onclick="generateReport()">Gerar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Raposa Smart -->
+  <div id="raposaModal" class="modal-backdrop modal-hidden">
+    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h3 class="text-base font-semibold text-slate-900">Raposa Smart</h3>
+          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeRaposa()">✕</button>
+        </div>
+        <div class="px-4 py-4 space-y-3">
+          <p class="text-sm text-slate-600">Tire dúvidas sobre os acertos, matérias de maior dificuldade, etc.</p>
+          <div><label for="raposaPergunta" class="block text-xs font-medium text-slate-600">Sua pergunta</label><textarea id="raposaPergunta" rows="5" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Ex.: Quais foram as matérias de maior dificuldade por turma?"></textarea></div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
+          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeRaposa()">Cancelar</button>
+          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700" onclick="askRaposa()">Enviar pergunta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] hidden">
+    <div class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg">Ação concluída!</div>
+  </div>
+
+  <script>
+    // Ano no rodapé
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sidebar overlay
+    const body = document.body, btnOpen = document.getElementById('btnOpen'), btnClose = document.getElementById('btnClose'), overlay = document.querySelector('.overlay');
+    const toggleSidebar = () => body.classList.toggle('sidebar-open'), closeSidebar = () => body.classList.remove('sidebar-open');
+    btnOpen?.addEventListener('click', toggleSidebar); btnClose?.addEventListener('click', closeSidebar); overlay?.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSidebar(); closeCompose(); closeReport(); closeRaposa(); } });
+
+    // Carrossel
+    let currentIndex = 0; const container = document.getElementById("carouselArea"); const totalItems = container?.children?.length || 0;
+    function moveSlide(direction){ currentIndex = Math.max(0, Math.min(currentIndex + direction, totalItems - 1)); container.scrollTo({ left: container.clientWidth * currentIndex, behavior: "smooth" }); }
+    document.addEventListener('keydown', (e) => { if (['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName)) return; if (e.key === 'ArrowLeft') moveSlide(-1); if (e.key === 'ArrowRight') moveSlide(1); });
+
+    // Charts
+    const grupos = {{ grupos|tojson }}, totalAlunos = {{ total_alunos|tojson }};
+    grupos.forEach((g, idx) => {
+      const canvas = document.getElementById('chart_' + (idx + 1)); if (!canvas) return;
+      new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: { labels: g.labels.map((_, i) => 'Q' + (g.intervalo[0] + i + 1)), datasets: [{ label: 'Acertos', data: g.valores, backgroundColor: 'rgba(16, 185, 129, 0.8)', borderColor: 'rgba(5, 150, 105, 1)', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (c) => ` ${c.formattedValue} acertos de ${totalAlunos}` } }, legend: { display: false } }, scales: { x: { ticks: { autoSkip: false }, grid: { display: false } }, y: { beginAtZero: true, title: { display: true, text: 'Quantidade de acertos' }, grid: { color: 'rgba(148,163,184,0.25)' } } } }
+      });
+    });
+
+    // Busca por nome
+    (function () {
+      const input = document.getElementById('searchAluno'), tbody = document.getElementById('rankingBody'), countEl = document.getElementById('countVisiveis');
+      if (!input || !tbody) return;
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const norm = s => (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      function filtrar(){ const q = norm(input.value.trim()); let visiveis = 0; rows.forEach(tr => { const nome = norm(tr.cells[1]?.textContent||''); const show = !q || nome.includes(q); tr.style.display = show ? '' : 'none'; if (show) visiveis++; }); if (countEl) countEl.textContent = visiveis; }
+      let t; input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(filtrar,120); }); filtrar();
+    })();
+
+    // Mensagens
+    const composeModal = document.getElementById('composeModal'), composePara = document.getElementById('composePara'), composeAssunto = document.getElementById('composeAssunto'), composeMsg = document.getElementById('composeMsg'), composeNomeHint = document.getElementById('composeNomeHint'), btnMensagens = document.getElementById('btnMensagens');
+    btnMensagens?.addEventListener('click', () => showCompose('', ''));
+    window.openCompose = (btn) => { const tr = btn.closest('tr'); const email = tr?.dataset?.email || ''; const nome = tr?.dataset?.nome || ''; showCompose(email, nome); };
+    function showCompose(email, nome){ composePara.value = email || ''; composeAssunto.value = ''; composeMsg.value = ''; composeNomeHint.textContent = nome ? `Destinatário: ${nome}` : ''; composeModal.classList.remove('modal-hidden'); (email ? composeAssunto : composePara).focus(); }
+    window.closeCompose = () => composeModal.classList.add('modal-hidden');
+    window.sendCompose = () => {
+      const payload = { para: composePara.value.trim(), assunto: composeAssunto.value.trim(), mensagem: composeMsg.value.trim(), arquivo: "{{ arquivo }}" };
+      if (!payload.para){ alert('Informe o e-mail do destinatário.'); composePara.focus(); return; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.para)){ alert('E-mail inválido.'); composePara.focus(); return; }
+      if (!payload.mensagem){ alert('Digite uma mensagem.'); composeMsg.focus(); return; }
+      console.log('Mensagem pronta para envio:', payload); showToast('Mensagem preparada para envio!'); closeCompose();
+    };
+
+    // Perfil social (placeholder)
+    window.openPerfil = (btn) => { const nome = btn.closest('tr')?.dataset?.nome || ''; showToast(`Abrir perfil social de: ${nome}`); };
+
+    // Relatório
+    const reportModal = document.getElementById('reportModal'); document.getElementById('btnReport')?.addEventListener('click', () => reportModal.classList.remove('modal-hidden'));
+    window.closeReport = () => reportModal.classList.add('modal-hidden');
+    window.generateReport = () => {
+      const payload = { formato: document.getElementById('reportFormato').value, resumo: document.getElementById('rResumo').checked, areas: document.getElementById('rAreas').checked, graficos: document.getElementById('rGraficos').checked, arquivo: "{{ arquivo }}" };
+      console.log('Gerar relatório:', payload); showToast(`Relatório (${payload.formato.toUpperCase()}) em processamento!`); closeReport();
+    };
+
+    // Raposa Smart
+    const raposaModal = document.getElementById('raposaModal'), btnRaposaFab = document.getElementById('btnRaposaFab'), raposaPergunta = document.getElementById('raposaPergunta');
+    btnRaposaFab?.addEventListener('click', () => { raposaPergunta.value = ''; raposaModal.classList.remove('modal-hidden'); raposaPergunta.focus(); });
+    window.closeRaposa = () => raposaModal.classList.add('modal-hidden');
+    window.askRaposa = () => { const pergunta = (raposaPergunta.value || '').trim(); if (!pergunta){ alert('Digite sua pergunta para a Raposa Smart.'); raposaPergunta.focus(); return; } console.log('Pergunta para a Raposa Smart:', { pergunta, arquivo: "{{ arquivo }}", modalidade: "{{ modalidade_filtro }}" }); showToast('Pergunta enviada à Raposa Smart!'); closeRaposa(); };
+
+    // Toast
+    function showToast(texto){ const toast = document.getElementById('toast'); toast.querySelector('div').textContent = texto || 'OK'; toast.classList.remove('hidden'); clearTimeout(showToast._t); showToast._t = setTimeout(() => toast.classList.add('hidden'), 2000); }
+  </script>
+</body>
+</html>

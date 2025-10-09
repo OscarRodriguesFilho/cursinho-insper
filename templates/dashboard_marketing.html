@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard de Marketing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --sidebar-w:260px; }
+    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial }
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+    thead th.sticky-head { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
+
+    /* Sidebar (overlay) */
+    .sidebar{ width:var(--sidebar-w); transform:translateX(-100%); transition:transform .25s ease; }
+    body.sidebar-open .sidebar{ transform:translateX(0); }
+    .overlay{ position:fixed; inset:0; background:rgba(15,23,42,.45); opacity:0; pointer-events:none; transition:opacity .2s ease; backdrop-filter:blur(2px); z-index:30; }
+    body.sidebar-open .overlay{ opacity:1; pointer-events:auto; }
+    .fab-open{ position:fixed; top:1rem; left:1rem; z-index:50; transition:opacity .2s ease; }
+    body.sidebar-open .fab-open{ opacity:0; pointer-events:none; }
+
+    .nav-link{ display:flex; align-items:center; gap:.75rem; padding:.5rem .5rem; border-radius:.5rem; }
+    .nav-link:hover{ background:#f1f5f9; }
+    .icon{ width:20px; height:20px; }
+
+    /* Carrossel */
+    .carousel { display:flex; overflow:hidden; scroll-snap-type:x mandatory; }
+    .carousel-item { flex:0 0 100%; scroll-snap-align:center; display:flex; justify-content:center; align-items:center; }
+    .carousel-img, .carousel-video { max-height:320px; width:auto; object-fit:contain; }
+    .carousel-iframe { width:100%; height:320px; border:0; }
+
+    /* Prévia da tabela (mídia) */
+    .preview-media-wrap { width:100%; display:flex; justify-content:center; align-items:center; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:0.75rem; overflow:hidden; }
+    .preview-img, .preview-video { max-height:420px; width:auto; object-fit:contain; }
+    .preview-iframe { width:100%; height:420px; border:0; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+
+  <!-- Botão flutuante (abre a sidebar) -->
+  <button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50" aria-label="Abrir menu">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+  </button>
+
+  <!-- Overlay -->
+  <div class="overlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
+    <div class="h-full flex flex-col">
+      <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold leading-5">Simulados</div>
+          <div class="text-[11px] text-slate-500">Dashboard</div>
+        </div>
+        <button id="btnClose" class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71 12 12.01 5.71 5.71 4.29 7.12 10.59 13.4 4.29 19.7l1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/></svg>
+        </button>
+      </div>
+      <nav class="flex-1 overflow-y-auto px-2 py-3">
+        <ul class="space-y-1">
+          <li><a href="#" class="nav-link text-sm text-slate-700"><svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Início</span></a></li>
+          <li><a href="#" class="nav-link text-sm text-slate-700"><svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg><span>Arquivos</span></a></li>
+          <li><a href="#" class="nav-link text-sm text-slate-700"><svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg><span>Alunos</span></a></li>
+          <li><a href="#" class="nav-link text-sm text-slate-700"><svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v12l4-4h12a2 2 0 002-2V5c0-1.1-.9-2-2-2z"/></svg><span>Mensagens</span></a></li>
+          <li><a href="#" class="nav-link text-sm text-slate-700"><svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3L7 8l5 5V9c2.76 0 5 2.24 5 5a5 5 0 11-5-7z"/></svg><span>Relatórios</span></a></li>
+        </ul>
+      </nav>
+      <div class="mt-auto border-t border-slate-200 px-2 py-3">
+        <a href="/" class="nav-link text-sm text-slate-700"><svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg><span>Voltar ao início</span></a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Conteúdo principal -->
+  <main class="mx-auto max-w-7xl px-6">
+    <div class="pt-8 flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-semibold tracking-tight">Dashboard de Marketing — {{ arquivo }}</h1>
+      <form method="POST" class="inline-flex items-center gap-2">
+        <select name="arquivo" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()">
+          {% for a in arquivos %}<option value="{{ a }}" {% if a == arquivo %}selected{% endif %}>{{ a }}</option>{% endfor %}
+        </select>
+      </form>
+    </div>
+
+    <!-- FILTROS -->
+    <section class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <form method="POST" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+        <input type="hidden" name="arquivo" value="{{ arquivo }}">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Plataforma</label>
+          <select name="plataforma" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option>Todos</option>
+            {% for v in filtros_opts.plataforma %}<option {% if sel.plataforma==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de conteúdo</label>
+          <select name="tipo_conteudo" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option>Todos</option>
+            {% for v in filtros_opts.tipo_conteudo %}<option {% if sel.tipo_conteudo==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Tema do post</label>
+          <select name="tema_post" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option>Todos</option>
+            {% for v in filtros_opts.tema_post %}<option {% if sel.tema_post==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Post Turbinado? (Instagram)</label>
+          <select name="turbinado" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option>Todos</option>
+            {% for v in filtros_opts.turbinado %}<option {% if sel.turbinado==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Público-alvo</label>
+          <select name="publico" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <option>Todos</option>
+            {% for v in filtros_opts.publico %}<option {% if sel.publico==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="md:col-span-3 lg:col-span-5 flex items-center justify-between gap-3">
+          <div class="relative w-full md:w-1/2">
+            <input id="busca" type="text" placeholder="Pesquisar em todas as colunas…" class="focus-ring w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><path d="M21 20l-5.6-5.6a7 7 0 10-1.4 1.4L20 21l1-1zM5 10a5 5 0 1110 0A5 5 0 015 10z"/></svg>
+          </div>
+          <div class="text-xs text-slate-500">Dados até: <span class="font-medium">{{ ate_data }}</span></div>
+          <button type="submit" class="focus-ring inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">Aplicar filtros</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- GRÁFICOS / PRÉVIA -->
+    <section class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <!-- Coluna esquerda -->
+      <div class="xl:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 class="text-base font-semibold text-slate-900">Métricas por conteúdo (post/reels no eixo X)</h3>
+        <div class="mt-3 h-[420px]"><canvas id="chartPorPost"></canvas></div>
+
+        <!-- KPIs -->
+        <div id="kpis" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+        <div id="kpis2" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+
+        <!-- FUNIL -->
+        <div id="funnelCard" class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-semibold text-slate-900">Funil — Público Alvo → Cliques no Link → Leads → Novos usuários</h4>
+            <div id="funnelMetaInfo" class="text-xs text-slate-600"></div>
+          </div>
+          <div class="mt-3">
+            <svg id="funnelSvg" class="w-full" viewBox="0 0 900 275" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna direita -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 class="text-base font-semibold text-slate-900">Prévia (carrossel)</h3>
+        <div class="mt-3">
+          <div class="relative">
+            <div id="carousel" class="carousel rounded-xl border border-slate-200 bg-slate-50"></div>
+            <!-- Métricas do slide -->
+            <div class="mt-3 grid grid-cols-3 gap-2 text-sm">
+              <div class="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500 mb-1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <span id="carouselLikes" class="font-semibold text-slate-900">0</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">curtidas</span>
+              </div>
+              <div class="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mb-1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span id="carouselInteractions" class="font-semibold text-slate-900">0</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">interações</span>
+              </div>
+              <div class="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 mb-1" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <span id="carouselEfficiency" class="font-semibold text-slate-900">0</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">eficiência</span>
+              </div>
+            </div>
+            <div class="mt-2 flex items-center justify-between">
+              <button id="prevSlide" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">⬅ Anterior</button>
+              <button id="nextSlide" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">Próximo ➡</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="mt-6 text-base font-semibold text-slate-900">Eficiência (escala 0–100, barras horizontais)</h3>
+        <div class="mt-3 h-[320px]"><canvas id="chartEff"></canvas></div>
+        <p class="mt-1 text-[11px] text-slate-500">Eixo Y: datas. Visualizações/curtidas corrigidas (÷10). Visualizações entram divididas por 10.000 na eficiência.</p>
+      </div>
+    </section>
+
+    <!-- TABELA + PRÉVIA -->
+    <section class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-9 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-base font-semibold text-slate-900">Tabela de Posts</h3>
+          <div id="contagem" class="text-xs text-slate-500"></div>
+        </div>
+        <div class="mt-3 overflow-x-auto">
+          <table id="tabelaPosts" class="min-w-[1100px] w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                {% if tabela|length > 0 %}
+                  {% set keys = tabela[0].keys()|list %}
+                  {% for k in keys %}
+                    {% if k != 'Imagem' and k != 'link' %}
+                      <th class="sticky-head px-3 py-2 text-left font-medium">{{ k }}</th>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% if tabela|length > 0 %}
+                {% set keys = tabela[0].keys()|list %}
+                {% for row in tabela %}
+                  <tr class="hover:bg-slate-50 cursor-pointer select-none" role="button" tabindex="0"
+                      data-img="{{ row.get('link','')|e }}">
+                    {% for k in keys %}
+                      {% if k != 'Imagem' and k != 'link' %}
+                        <td class="px-3 py-2">{{ row.get(k,'') }}</td>
+                      {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3">
+        <div class="sticky top-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-base font-semibold text-slate-900">Prévia (tabela)</h3>
+          <div class="mt-3 w-full overflow-hidden rounded-xl preview-media-wrap">
+            <!-- Agora é dinâmico: imagem OU vídeo OU iframe -->
+            <div id="previewMedia" class="w-full flex justify-center items-center">
+              <!-- placeholder -->
+              <img class="preview-img" alt="Prévia do post"
+                   src="data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22&gt;&lt;rect width=%22400%22 height=%22300%22 fill=%22%23f1f5f9%22/&gt;&lt;text x=%22200%22 y=%22160%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%2394a3b8%22&gt;Prévia indisponível&lt;/text&gt;&lt;/svg%3E">
+            </div>
+          </div>
+          <p class="mt-2 text-xs text-slate-500">Clique numa linha para atualizar as prévias.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESTATÍSTICA -->
+    <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <h3 class="text-base font-semibold text-slate-900">Tabela de Estatística (Resumo de Métricas)</h3>
+      <div class="mt-3 overflow-x-auto">
+        <table class="min-w-[900px] w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Métrica</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Média</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Desvio Padrão</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Variação %</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Máx</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Mín</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Q1</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Mediana</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Q3</th>
+              <th class="sticky-head px-3 py-2 text-left font-medium">Variância</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for nome, vals in metrics_table.items() %}
+            <tr>
+              <td class="px-3 py-2 font-medium text-slate-800">{{ nome }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Média']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Desvio Padrão']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Variação Percentual']) }}%</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Máximo']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Mínimo']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Q1']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Mediana']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Q3']) }}</td>
+              <td class="px-3 py-2">{{ '%.2f'|format(vals['Variância']) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="mx-auto mt-12 max-w-7xl pb-10 text-center text-xs text-slate-400">
+      © <span id="year"></span> Marketing — Todos os direitos reservados.
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sidebar
+    const body = document.body, btnOpen = document.getElementById('btnOpen'),
+          btnClose = document.getElementById('btnClose'), overlay = document.querySelector('.overlay');
+    const closeSidebar = () => body.classList.remove('sidebar-open');
+    const toggleSidebar = () => body.classList.toggle('sidebar-open');
+    btnOpen?.addEventListener('click', toggleSidebar);
+    btnClose?.addEventListener('click', closeSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSidebar(); });
+
+    // ========= NOVO: utilidades de mídia (imagem/vídeo/drive) =========
+    function getDriveId(url){
+      try{
+        const u = new URL(url);
+        if(!u.hostname.includes('drive.google.com')) return null;
+        // formatos: /file/d/ID/view  |  ?id=ID
+        const m = u.pathname.match(/\/d\/([^/]+)/);
+        if (m && m[1]) return m[1];
+        const id = u.searchParams.get('id');
+        return id || null;
+      }catch{
+        // pode ser apenas o ID
+        if (/^[A-Za-z0-9_-]{20,}$/.test(url)) return url;
+        return null;
+      }
+    }
+    function isDriveUrl(url){
+      try{ return new URL(url).hostname.includes('drive.google.com'); }catch{ return /^[A-Za-z0-9_-]{20,}$/.test(url); }
+    }
+    function isVideoUrl(url){
+      return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
+    }
+    function isImageUrl(url){
+      return /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(url);
+    }
+
+    // Mantém sua normalização de THUMB para imagens (Drive -> thumbnail)
+    function normalizeImageUrl(url) {
+      if (!url) return '';
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes('drive.google.com')) {
+          let id = u.searchParams.get('id');
+          if (!id) {
+            const m = u.pathname.match(/\/d\/([^/]+)/);
+            if (m && m[1]) id = m[1];
+          }
+          if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+        }
+        return url;
+      } catch {
+        if (/^[A-Za-z0-9_-]{20,}$/.test(url)) return `https://drive.google.com/thumbnail?id=${url}&sz=w1200`;
+        return url;
+      }
+    }
+
+    // NOVO: gera HTML da mídia correta
+    function mediaHTML(url, opts={context:'carousel'}){
+      if(!url) return '';
+      // Drive: usar preview em iframe (funciona para imagem E vídeo)
+      if (isDriveUrl(url)){
+        const id = getDriveId(url);
+        if (id) return `<iframe class="${opts.context==='preview'?'preview-iframe':'carousel-iframe'}" src="https://drive.google.com/file/d/${id}/preview" allow="autoplay" allowfullscreen></iframe>`;
+      }
+      // Vídeo direto
+      if (isVideoUrl(url)){
+        return `<video class="${opts.context==='preview'?'preview-video':'carousel-video'}" src="${url}" controls playsinline muted loop></video>`;
+      }
+      // Imagem (ou qualquer outro link tratado como imagem)
+      const imgUrl = isImageUrl(url) ? url : normalizeImageUrl(url);
+      const cls = opts.context==='preview' ? 'preview-img' : 'carousel-img';
+      return `<img class="${cls}" src="${imgUrl}" alt="mídia">`;
+    }
+
+    // ========= Busca global na tabela =========
+    (function(){
+      const tabela = document.getElementById('tabelaPosts');
+      const busca = document.getElementById('busca');
+      const cont = document.getElementById('contagem');
+      if(!tabela) return;
+      const rows = Array.from(tabela.tBodies[0]?.rows || []);
+      if (cont) cont.textContent = `Total de posts: ${rows.length}`;
+      function filtrar(){
+        const q = (busca.value||'').toLowerCase();
+        let vis=0;
+        rows.forEach(r=>{
+          const show = r.textContent.toLowerCase().includes(q);
+          r.style.display = show ? '' : 'none';
+          if (show) vis++;
+        });
+        if (cont) cont.textContent = `Mostrando ${vis} de ${rows.length}`;
+      }
+      if (busca){ busca.addEventListener('input', filtrar); filtrar(); }
+    })();
+
+    // ========== Dados do backend ==========
+    let payload = {{ charts_payload|tojson }};
+
+    // Fallback a partir da tabela + captura da coluna "data"
+    function reconstructFromTable(){
+      const rows = Array.from(document.querySelectorAll('#tabelaPosts tbody tr'));
+      const headers = Array.from(document.querySelectorAll('#tabelaPosts thead th')).map(h => (h.textContent||'').toLowerCase().trim());
+      const labels = [], views=[], curtidas=[], comentarios=[], compart=[], salvamentos=[], cliques_link=[], cliques_perfil=[], tipos=[], datas=[], linksImg=[];
+      rows.forEach(r=>{
+        const cells = Array.from(r.cells).map(c => (c.textContent||'').trim());
+        linksImg.push(r.dataset.img||'');
+        let label = cells[0] || '';
+        let v=0, like=0, com=0, comp=0, salv=0, clkLink=0, clkPerfil=0, tipo='', dataTxt='';
+        cells.forEach((txt,i)=>{
+          const h = headers[i]||''; const num = Number(String(txt).replace(/[^0-9\-,\.]/g,'').replace(/\./g,'').replace(',','.'))||0;
+          if (h.includes('alcance') || h.includes('visualiza')) v = num;
+          if (h.includes('curtid') || h.includes('reaç') || h.includes('like')) like = num;
+          if (h.includes('coment')) com = num;
+          if (h.includes('compart')) comp = num;
+          if (h.includes('salv')) salv = num;
+          if (h.includes('cliques') && h.includes('link')) clkLink = num;
+          if (h.includes('cliques') && h.includes('perfil')) clkPerfil = num;
+          if (h.includes('tipo')) tipo = txt.toLowerCase();
+          if (h.includes('data')) dataTxt = txt;
+        });
+        labels.push(label); views.push(v); curtidas.push(like); comentarios.push(com);
+        compart.push(comp); salvamentos.push(salv); cliques_link.push(clkLink); cliques_perfil.push(clkPerfil);
+        tipos.push(tipo); datas.push(dataTxt || label);
+      });
+      return { labels, views, curtidas, comentarios, compart, salvamentos, cliques_link, cliques_perfil, tipos, datas, linksImg };
+    }
+
+    if (!payload || !Array.isArray(payload.labels) || payload.labels.length === 0) {
+      payload = reconstructFromTable();
+    }
+
+    // --------- CORREÇÃO global (views/curtidas ÷10) ----------
+    (function correctScales(){
+      if(!payload) return;
+      payload.views = (payload.views||[]).map(v => (+v||0)/10);
+      payload.curtidas = (payload.curtidas||[]).map(v => (+v||0)/10);
+    })();
+
+    // Garante vetor de datas
+    function ensureDates(p){
+      if (p && Array.isArray(p.datas) && p.datas.filter(Boolean).length === p.labels.length) return p.datas;
+      return reconstructFromTable().datas;
+    }
+    const DATA_VEC = ensureDates(payload);
+
+    // KPIs + gráfico principal
+    if (payload) {
+      const labels = payload.labels || [];
+      const viewsK = (payload.views||[]).map(v => Math.round(((+v||0)/1000)*100)/100);
+      const sum = (a)=> (a||[]).reduce((x,y)=> x + (+y||0), 0);
+
+      const k1 = {
+        'Posts/Reels (filtrados)': labels.length,
+        'Visualizações (mil)': viewsK.reduce((x,y)=>x+y,0).toFixed(2),
+        'Curtidas': sum(payload.curtidas),
+        'Comentários': sum(payload.comentarios)
+      };
+      const k2 = {
+        'Compart.': sum(payload.compart),
+        'Salvamentos': sum(payload.salvamentos),
+        'Cliques Perfil': sum(payload.cliques_perfil),
+        'Cliques Link': sum(payload.cliques_link)
+      };
+      function paintKPIs(elId, dataMap){
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.innerHTML = Object.entries(dataMap).map(([k,v])=>`
+          <div class="rounded-xl border border-slate-200 bg-white px-3 py-3">
+            <div class="text-[11px] uppercase tracking-wide text-slate-500">${k}</div>
+            <div class="mt-1 text-xl font-semibold text-slate-900">${Number.isFinite(v)? v.toLocaleString('pt-BR') : v}</div>
+          </div>
+        `).join('');
+      }
+      paintKPIs('kpis', k1);
+      paintKPIs('kpis2', k2);
+
+      // Gráfico principal
+      new Chart(document.getElementById('chartPorPost'), {
+        type:'bar',
+        data:{
+          labels,
+          datasets:[
+            { type:'bar',  label:'Visualizações (mil)', data: viewsK,                 backgroundColor:'rgba(37,99,235,.75)', yAxisID:'y'  },
+            { type:'bar',  label:'Curtidas',            data: payload.curtidas,      backgroundColor:'rgba(16,185,129,.75)', yAxisID:'y'  },
+            { type:'bar',  label:'Compart.',            data: payload.compart,       backgroundColor:'rgba(234,88,12,.75)',  yAxisID:'y'  },
+            { type:'bar',  label:'Salvamentos',         data: payload.salvamentos,   backgroundColor:'rgba(139,92,246,.75)', yAxisID:'y'  },
+            { type:'line', label:'Cliques Perfil',      data: payload.cliques_perfil, borderColor:'rgba(2,132,199,1)',  backgroundColor:'rgba(2,132,199,.15)', tension:.25, yAxisID:'y1' },
+            { type:'line', label:'Cliques Link',        data: payload.cliques_link,   borderColor:'rgba(225,29,72,1)',   backgroundColor:'rgba(225,29,72,.12)', tension:.25, yAxisID:'y1' },
+            { type:'line', label:'Comentários',         data: payload.comentarios,    borderColor:'rgba(30,41,59,1)',    backgroundColor:'rgba(30,41,59,.10)',  tension:.25, yAxisID:'y1' }
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{position:'top'} },
+          scales:{
+            x:{ ticks:{ autoSkip:true, maxTicksLimit:18 }, grid:{ display:false }, title:{display:false} },
+            y:{ beginAtZero:true, grid:{color:'rgba(148,163,184,0.25)'}, title:{display:false} },
+            y1:{ beginAtZero:true, position:'right', grid:{drawOnChartArea:false}, title:{display:false} }
+          },
+          elements:{ point:{ radius:0 } }
+        }
+      });
+    }
+
+    // --------- EFICIÊNCIA ----------
+    (function makeEfficiency(){
+      if(!payload) return;
+      const tipos  = (payload.tipos||payload.tipo||payload.types||[]).map(t => (t||'').toString().toLowerCase());
+      const datas  = DATA_VEC;
+      const n = (payload.labels||[]).length;
+
+      function val(arr,i){ return Number((arr&&arr[i])||0) }
+      const W = {
+        'posts':{ imp:2, views:2, curt:2, com:4, comp:4, perfil:4, salv:3, link:4 },
+        'post': { imp:2, views:2, curt:2, com:4, comp:4, perfil:4, salv:3, link:4 },
+        'post comum':{ imp:2, views:2, curt:2, com:4, comp:4, perfil:4, salv:3, link:4 },
+        'stories':{ imp:0, views:2, curt:0, com:0, comp:4, perfil:4, salv:0, link:4 },
+        'reels':{ imp:2, views:2, curt:2, com:4, comp:4, perfil:4, salv:3, link:0 }
+      };
+      const rawScores=[], byKey={};
+      for(let i=0;i<n;i++){
+        const w=W[tipos[i]]||W['posts'];
+        const views=val(payload.views,i)/10000.0;
+        const score = w.views*views + w.curt*val(payload.curtidas,i) + w.com*val(payload.comentarios,i) +
+                      w.comp*val(payload.compart,i) + w.perfil*val(payload.cliques_perfil,i) +
+                      w.salv*val(payload.salvamentos,i) + w.link*val(payload.cliques_link,i);
+        rawScores.push(score);
+      }
+      const maxS=Math.max(...rawScores,1);
+      const eff = rawScores.map(s => (s/maxS)*100);
+
+      (window.effByKey = {});
+      for(let i=0;i<n;i++){
+        const label = payload.labels?.[i] || `Item ${i+1}`;
+        const date  = datas?.[i] || label;
+        const link  = (payload.linksImg?.[i] || payload.link?.[i] || '') + '';
+        if (link) window.effByKey['link:'+link] = eff[i];
+        if (date) window.effByKey['date:'+date] = eff[i];
+        if (label) window.effByKey['label:'+label] = eff[i];
+      }
+
+      const idx=[...eff.keys()].sort((a,b)=>eff[b]-eff[a]).slice(0,15);
+      const yLabels = idx.map(i=>datas[i] || payload.labels?.[i] || `Item ${i+1}`);
+      const vals    = idx.map(i=>eff[i]);
+
+      const ctx=document.getElementById('chartEff'); if(!ctx) return;
+      new Chart(ctx,{
+        type:'bar',
+        data:{ labels:yLabels, datasets:[{ label:'Eficiência', data:vals, backgroundColor:'rgba(16,185,129,.85)', barThickness:12, maxBarThickness:14 }] },
+        options:{
+          indexAxis:'y',
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>` ${c.formattedValue}` } } },
+          scales:{ x:{ beginAtZero:true, max:100, grid:{color:'rgba(148,163,184,0.25)'} }, y:{ grid:{display:false} } }
+        }
+      });
+    })();
+
+    // --------- CARROSSEL (agora com vídeo/imagem/drive) ----------
+    function effForItem(link, date, label){
+      const tryKeys = [
+        link ? 'link:'+link : null,
+        date ? 'date:'+date : null,
+        label ? 'label:'+label : null
+      ].filter(Boolean);
+      for (const k of tryKeys){
+        if (window.effByKey && Object.prototype.hasOwnProperty.call(window.effByKey, k)) return window.effByKey[k];
+      }
+      return 0;
+    }
+
+    function buildImagesFromTable(){
+      const rows = Array.from(document.querySelectorAll('#tabelaPosts tbody tr'));
+      const headers = Array.from(document.querySelectorAll('#tabelaPosts thead th')).map(h => (h.textContent||'').toLowerCase().trim());
+      const dataCol = headers.findIndex(h => h.includes('data'));
+      return rows.filter(r=>r.style.display!=='none').map((r)=>{
+        const urlRaw = r.dataset.img||'';
+        const url = urlRaw; // mantemos raw para mediaHTML decidir
+        const cells = Array.from(r.cells);
+        const label = (cells[0]?.textContent||'').trim();
+        const dateText = dataCol>=0 ? (cells[dataCol]?.textContent||'').trim() : '';
+        let curtidas=0, comentarios=0, salv=0, clkLink=0;
+        cells.forEach((cell,idx)=>{
+          const h = headers[idx]||''; const val = parseInt((cell.textContent||'').replace(/[^\d]/g,''))||0;
+          if (h.includes('curtida')||h.includes('like')) curtidas = val;
+          if (h.includes('coment')) comentarios = val;
+          if (h.includes('salv')) salv = val;
+          if (h.includes('cliques')&&h.includes('link')) clkLink = val;
+        });
+        curtidas = Math.round(curtidas/10);
+        const interacoes = salv + comentarios + clkLink;
+        const eff = effForItem(urlRaw, dateText, label);
+        return { url, label, dateText, curtidas, interacoes, efficiency: eff };
+      });
+    }
+
+    function renderCarousel(items, startIndex=0){
+      const wrap = document.getElementById('carousel');
+      if(!wrap) return;
+      wrap.innerHTML = items.map(({url})=> `<div class="carousel-item">${mediaHTML(url, {context:'carousel'})}</div>`).join('');
+      let index = Math.min(Math.max(0,startIndex), Math.max(0, items.length-1));
+      function updateMetrics(){
+        const cur = items[index]||{ curtidas:0, interacoes:0, efficiency:0 };
+        const likeEl = document.getElementById('carouselLikes'); if (likeEl) likeEl.textContent = (cur.curtidas||0).toLocaleString('pt-BR');
+        const intEl  = document.getElementById('carouselInteractions'); if (intEl) intEl.textContent = (cur.interacoes||0).toLocaleString('pt-BR');
+        const effEl  = document.getElementById('carouselEfficiency'); if (effEl) effEl.textContent = Math.round(cur.efficiency||0);
+      }
+      function updatePreview(){
+        const cur = items[index];
+        const prevWrap = document.getElementById('previewMedia');
+        if (prevWrap) prevWrap.innerHTML = mediaHTML(cur?.url||'', {context:'preview'});
+      }
+      const go = (d)=>{ index = Math.max(0, Math.min(index+d, items.length-1)); wrap.scrollTo({ left: wrap.clientWidth*index, behavior:'smooth' }); updatePreview(); updateMetrics(); };
+      document.getElementById('prevSlide')?.addEventListener('click', ()=>go(-1));
+      document.getElementById('nextSlide')?.addEventListener('click', ()=>go(1));
+      document.addEventListener('keydown',(e)=>{
+        if(['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName)) return;
+        if(e.key==='ArrowLeft') go(-1);
+        if(e.key==='ArrowRight') go(1);
+      });
+      wrap.scrollTo({ left: wrap.clientWidth*index, behavior:'auto' });
+      updatePreview(); updateMetrics();
+    }
+
+    let carouselImages = buildImagesFromTable();
+    renderCarousel(carouselImages, 0);
+
+    // clique na tabela -> sincroniza carrossel + prévia
+    (function(){
+      const table = document.getElementById('tabelaPosts'); if(!table) return;
+      table.addEventListener('click',(e)=>{
+        const tr=e.target.closest('tr[role="button"]'); if(!tr)return;
+        const url = tr.dataset.img||'';
+        const prev=document.getElementById('previewMedia');
+        if(prev) prev.innerHTML = mediaHTML(url, {context:'preview'});
+        carouselImages=buildImagesFromTable();
+        const idx=carouselImages.findIndex(it => (tr.dataset.img === it.url));
+        renderCarousel(carouselImages, idx>=0?idx:0);
+      });
+      table.addEventListener('keydown',(e)=>{
+        if(e.key!=='Enter'&&e.key!==' ')return;
+        const tr=e.target.closest('tr[role="button"]'); if(!tr)return; e.preventDefault();
+        const url = tr.dataset.img||'';
+        const prev=document.getElementById('previewMedia');
+        if(prev) prev.innerHTML = mediaHTML(url, {context:'preview'});
+        carouselImages=buildImagesFromTable();
+        const idx=carouselImages.findIndex(it => (tr.dataset.img === it.url));
+        renderCarousel(carouselImages, idx>=0?idx:0);
+      });
+    })();
+
+    // --------- FUNIL (vórtice) ----------
+    (function renderFunnel(){
+      const totalViews = (payload?.views||[]).reduce((s,v)=> s+(+v||0), 0);
+      const metaPublico = Math.max(50000, Math.round(totalViews * 0.8));
+      const publicoAtingido = Math.round(Math.min(totalViews, metaPublico * 0.72));
+      const cliquesLink = Math.max(50, Math.round((payload?.cliques_link||[]).reduce((s,v)=>s+(+v||0),0)));
+      const leads = Math.max(10, Math.round(cliquesLink * 0.28));
+      const novosUsuarios = Math.max(5, Math.round(leads * 0.62));
+
+      const pctMeta = metaPublico>0 ? (publicoAtingido/metaPublico)*100 : 0;
+      const pctLeads = cliquesLink>0 ? (leads/cliquesLink)*100 : 0;
+
+      const metaEl = document.getElementById('funnelMetaInfo');
+      if (metaEl) metaEl.textContent =
+        `Meta: ${metaPublico.toLocaleString('pt-BR')} • Atingido: ${publicoAtingido.toLocaleString('pt-BR')} (${pctMeta.toFixed(1)}%) • Leads: ${leads.toLocaleString('pt-BR')} (${pctLeads.toFixed(1)}%) • Novos usuários: ${novosUsuarios.toLocaleString('pt-BR')}`;
+
+      const svg = document.getElementById('funnelSvg'); if(!svg) return;
+      const W = svg.viewBox.baseVal.width || 900, H = svg.viewBox.baseVal.height || 275;
+      const cx = W/2, topY = 30, step = 58, heights = 38;
+
+      const stages = [
+        { label:`Público-alvo`, value: publicoAtingido, color:'#3b82f6' },
+        { label:`Cliques no link`, value: cliquesLink, color:'#f59e0b' },
+        { label:`Leads`, value: leads, color:'#10b981' },
+        { label:`Novos usuários`, value: novosUsuarios, color:'#8b5cf6' }
+      ];
+
+      const lastThreeMax = Math.max(stages[1].value, stages[2].value, stages[3].value, 1);
+      const maxVForWidth = Math.max(lastThreeMax, stages[0].value * 0.35);
+
+      const minWidth = 160, maxWidth = W*0.88;
+
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+      stages.forEach((s, i)=>{
+        const w = minWidth + (maxWidth-minWidth) * (s.value/maxVForWidth);
+        const x = cx - w/2;
+        const y = topY + i*step;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        rect.setAttribute('x', x); rect.setAttribute('y', y);
+        rect.setAttribute('width', w); rect.setAttribute('height', heights);
+        rect.setAttribute('rx', 10); rect.setAttribute('fill', s.color);
+        svg.appendChild(rect);
+
+        const tVal = document.createElementNS('http://www.w3.org/2000/svg','text');
+        tVal.setAttribute('x', cx); tVal.setAttribute('y', y + heights/2 + 5);
+        tVal.setAttribute('fill', '#111827'); tVal.setAttribute('font-size', '14');
+        tVal.setAttribute('font-weight', '700'); tVal.setAttribute('text-anchor','middle');
+        tVal.textContent = s.value.toLocaleString('pt-BR');
+        svg.appendChild(tVal);
+
+        const tLab = document.createElementNS('http://www.w3.org/2000/svg','text');
+        tLab.setAttribute('x', 18); tLab.setAttribute('y', y + heights/2 + 5);
+        tLab.setAttribute('fill', '#334155'); tLab.setAttribute('font-size','12');
+        tLab.setAttribute('font-weight','600'); tLab.textContent = s.label;
+        svg.appendChild(tLab);
+      });
+    })();
+  </script>
+</body>
+</html>

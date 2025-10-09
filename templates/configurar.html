@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Configurar Simulado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonte opcional e ajustes de foco -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light dark; }
+    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; }
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+  <header class="w-full border-b border-slate-200 bg-white/70 backdrop-blur">
+    <div class="mx-auto max-w-3xl px-6 py-4">
+      <h1 class="text-xl font-semibold tracking-tight">Configurar Simulado</h1>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-3xl px-6">
+    <section class="mt-10">
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-6 py-5">
+          <h2 class="text-lg font-semibold text-slate-900">Configuração Inicial</h2>
+          <p class="mt-1 text-sm text-slate-600">
+            Defina abaixo o número total de questões do simulado. Você poderá ajustar outros detalhes nas próximas etapas.
+          </p>
+        </div>
+
+        <form method="POST" class="px-6 py-6">
+          <div class="mb-5">
+            <label for="numero_questoes" class="mb-2 block text-sm font-medium text-slate-700">
+              Número total de questões da prova
+            </label>
+
+            <div class="relative">
+              <input
+                type="number"
+                id="numero_questoes"
+                name="numero_questoes"
+                min="1"
+                required
+                inputmode="numeric"
+                class="focus-ring block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm transition hover:border-slate-400 focus:border-blue-500"
+                placeholder="Ex.: 90"
+                aria-describedby="hint-questoes"
+              />
+            </div>
+
+            <p id="hint-questoes" class="mt-2 text-xs text-slate-500">
+              Informe um número inteiro maior ou igual a 1.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-end gap-3">
+            <button
+              type="reset"
+              class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            >
+              Limpar
+            </button>
+
+            <button
+              type="submit"
+              class="focus-ring inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]"
+            >
+              Continuar para o upload
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <p class="mt-6 text-center text-xs text-slate-500">
+        Dica: você poderá importar o gabarito e configurar áreas/disciplinas na próxima tela.
+      </p>
+    </section>
+  </main>
+
+  <footer class="mx-auto mt-12 max-w-3xl px-6 pb-10 text-center text-xs text-slate-400">
+    © <span id="year"></span> Simulados — Todos os direitos reservados.
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
