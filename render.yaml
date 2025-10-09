@@ -2,8 +2,12 @@ services:
   - type: web
     name: minha-app
     env: python
-    plan: free
-    region: oregon
     runtime: python
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: |
+      export CARGO_HOME=/opt/render/project/.cargo
+      export RUSTUP_HOME=/opt/render/project/.rustup
+      curl https://sh.rustup.rs -sSf | sh -s -- -y
+      export PATH="$CARGO_HOME/bin:$PATH"
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
     startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT"
