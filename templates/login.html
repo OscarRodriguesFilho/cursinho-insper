@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login • Cursinho Insper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+  <style>
+    body { background: #f6f7fb; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+      <h1 class="text-2xl font-bold text-gray-900 mb-6">Entrar</h1>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-4 space-y-2">
+            {% for category, msg in messages %}
+              <div class="text-sm px-3 py-2 rounded-lg
+                          {% if category=='error' %} bg-red-50 text-red-700 border border-red-200
+                          {% elif category=='success' %} bg-green-50 text-green-700 border border-green-200
+                          {% else %} bg-gray-50 text-gray-700 border border-gray-200 {% endif %}">
+                {{ msg }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login', **request.args) }}" class="space-y-4">
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+          <input id="email" name="email" type="email" required
+                 class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                 placeholder="seu@email.com" autofocus>
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+          <input id="password" name="password" type="password" required
+                 class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                 placeholder="••••••••">
+        </div>
+        <button type="submit"
+                class="w-full bg-gray-900 hover:bg-black text-white font-semibold rounded-lg py-2.5">
+          Acessar
+        </button>
+      </form>
+
+     
+    </div>
+  </div>
+</body>
+</html>

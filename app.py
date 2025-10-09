@@ -1,7 +1,9 @@
 # app.py
-from flask import Flask, request, render_template, jsonify, send_from_directory, url_for
-import os
-import json
+from flask import (
+    Flask, request, render_template, jsonify, send_from_directory,
+    url_for, session, redirect, flash
+)
+import os, json
 import pandas as pd
 from collections import Counter
 
@@ -9,6 +11,12 @@ from collections import Counter
 import cv2
 import numpy as np
 from pathlib import Path
+
+# ====== Segurança / .env ======
+from dotenv import load_dotenv
+from werkzeug.security import check_password_hash, generate_password_hash
+
+load_dotenv()  # carrega variáveis do .env
 
 # ===================== Configurações =====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,27 +38,94 @@ DETECT_CFG = {
     "R_RING_OUT": 1.50,
 }
 
+# ===================== App / Sessão =====================
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# SECRET_KEY do .env (obrigatório em produção)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+
+# ======== Credenciais (do .env) ========
+AUTH_EMAIL = (os.getenv("AUTH_EMAIL") or "").strip().lower()
+AUTH_PASSWORD_HASH = os.getenv("AUTH_PASSWORD_HASH")  # preferencial
+AUTH_PASSWORD_PLAIN = os.getenv("AUTH_PASSWORD_PLAIN")  # fallback opcional
+
+if not AUTH_EMAIL:
+    raise RuntimeError("AUTH_EMAIL não definido no .env")
+
+if not AUTH_PASSWORD_HASH:
+    if not AUTH_PASSWORD_PLAIN:
+        raise RuntimeError("Defina AUTH_PASSWORD_HASH (recomendado) ou AUTH_PASSWORD_PLAIN no .env")
+    # Fallback seguro em memória: gera hash a partir da senha plana fornecida
+    AUTH_PASSWORD_HASH = generate_password_hash(AUTH_PASSWORD_PLAIN)
+
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# ---------------------- Auth helpers ----------------------
+def _is_api_request():
+    return request.path.startswith("/api/") or "application/json" in (request.headers.get("Accept", "")).lower()
+
+def login_required(fn):
+    from functools import wraps
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if session.get("user") == AUTH_EMAIL:
+            return fn(*args, **kwargs)
+        if _is_api_request():
+            return jsonify({"ok": False, "error": "Unauthorized"}), 401
+        nxt = request.full_path if request.query_string else request.path
+        return redirect(url_for("login", next=nxt))
+    return wrapper
+
+# ===================== Rotas de Autenticação =====================
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    # JSON (ex.: axios/fetch)
+    if request.method == "POST" and request.is_json:
+        payload = request.get_json(silent=True) or {}
+        email = str(payload.get("email", "")).strip().lower()
+        password = str(payload.get("password", "")).strip()
+        if email == AUTH_EMAIL and check_password_hash(AUTH_PASSWORD_HASH, password):
+            session["user"] = AUTH_EMAIL
+            return jsonify({"ok": True})
+        return jsonify({"ok": False, "error": "Credenciais inválidas"}), 401
+
+    # Formulário HTML
+    if request.method == "POST":
+        email = str(request.form.get("email", "")).strip().lower()
+        password = str(request.form.get("password", "")).strip()
+        if email == AUTH_EMAIL and check_password_hash(AUTH_PASSWORD_HASH, password):
+            session["user"] = AUTH_EMAIL
+            next_url = request.args.get("next") or url_for("index")
+            return redirect(next_url)
+        flash("Credenciais inválidas.", "error")
+
+    return render_template("login.html")
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    session.clear()
+    if _is_api_request():
+        return jsonify({"ok": True})
+    return redirect(url_for("login"))
 
 # ===================== Rotas utilitárias =====================
 
 @app.route('/uploads/<path:filename>')
+@login_required
 def serve_upload(filename):
-    """Serve arquivos de /uploads (ex.: image.png, bubbles.json)."""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/root/<path:filename>')
+@login_required
 def serve_root(filename):
-    """Serve arquivos do diretório raiz do projeto (ex.: image.png no BASE_DIR)."""
     return send_from_directory(BASE_DIR, filename)
 
-# (opcional) debug do conteúdo de uploads
 @app.route('/debug/uploads')
+@login_required
 def debug_uploads():
     files = sorted(os.listdir(app.config['UPLOAD_FOLDER']))
     return jsonify({"UPLOAD_FOLDER": app.config['UPLOAD_FOLDER'], "files": files})
@@ -58,10 +133,12 @@ def debug_uploads():
 # ===================== Fluxo principal (upload/correção) =====================
 
 @app.route('/')
+@login_required
 def index():
     return render_template('upload.html')
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload_file():
     if 'file' not in request.files:
         return 'Nenhum arquivo enviado.', 400
@@ -108,6 +185,7 @@ def upload_file():
     return '❌ Tipo de arquivo não permitido. Envie um .xlsx.', 400
 
 @app.route('/gabarito')
+@login_required
 def ver_gabarito():
     try:
         with open(os.path.join(UPLOAD_FOLDER, 'último_arquivo.txt'), 'r', encoding='utf-8') as f:
@@ -122,18 +200,14 @@ def ver_gabarito():
 # ===================== Conferência de gabarito (bolinhas) =====================
 
 def _find_image_path():
-    """Procura image.* primeiro em /uploads e depois no diretório raiz."""
-    # 1) nomes padrão em /uploads
     for c in DETECT_CFG["IMG_CANDIDATES"]:
         p = os.path.join(UPLOAD_FOLDER, c)
         if os.path.exists(p):
             return p, url_for('serve_upload', filename=c), c
-    # 2) nomes padrão no raiz
     for c in DETECT_CFG["IMG_CANDIDATES"]:
         p = os.path.join(BASE_DIR, c)
         if os.path.exists(p):
             return p, url_for('serve_root', filename=c), c
-    # 3) 1ª imagem encontrada (uploads → raiz)
     for f in sorted(os.listdir(UPLOAD_FOLDER)):
         if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
             p = os.path.join(UPLOAD_FOLDER, f)
@@ -145,22 +219,16 @@ def _find_image_path():
     return None, None, None
 
 @app.route('/conferir_gabarito', methods=['GET'])
+@login_required
 def conferir_gabarito():
-    """
-    Página interativa para visualizar/editar bolinhas sobre o gabarito.
-    Agora com botão "Detectar bolinhas" que chama /api/detect_bubbles.
-    """
     img_path, imagem_url, imagem_nome = _find_image_path()
     return render_template('conferir_gabarito_bolhas.html',
                            imagem_url=imagem_url,
                            imagem_nome=imagem_nome)
 
 @app.route('/api/bubbles', methods=['GET', 'POST'])
+@login_required
 def api_bubbles():
-    """
-    GET  -> retorna JSON com bolinhas (uploads/bubbles.json ou raiz/bubbles.json).
-    POST -> salva SEMPRE em uploads/bubbles.json
-    """
     uploads_json = os.path.join(app.config['UPLOAD_FOLDER'], 'bubbles.json')
     root_json = os.path.join(BASE_DIR, 'bubbles.json')
 
@@ -176,7 +244,6 @@ def api_bubbles():
             data = {"image": "image.png", "circles": []}
         return jsonify(data)
 
-    # POST (salva sempre em uploads)
     try:
         payload = request.get_json(force=True, silent=False)
         if not isinstance(payload, dict) or 'circles' not in payload or not isinstance(payload['circles'], list):
@@ -200,27 +267,16 @@ def api_bubbles():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-# ---- Nova rota: DETECÇÃO de bolinhas (equivalente ao seu script) ----
-# ====== Helpers de detecção (robustos) ======
-# --- coloque isto no seu app.py (substituindo a versão anterior do detect) ---
-
-import cv2, numpy as np
-from pathlib import Path
-
-# Parâmetros mais restritos
+# ---- Detecção de bolinhas (robusta) ----
 RESIZE_W      = 1800
 HOUGH_PARAM1  = 120
-HOUGH_PARAM2  = 28     # mais alto => menos falsos positivos
+HOUGH_PARAM2  = 28
 MIN_DIST      = 22
-
-# rádio (na imagem redimensionada). Bolhas de gabarito costumam ficar aqui:
 R_MIN_FIX     = 11
 R_MAX_FIX     = 20
-
-# Classificação "preenchida"
-DARK_DROP_MIN = 35     # anel - interior
-INNER_MAX     = 140    # teto de luminância do interior
-FILL_RATIO_MIN= 0.55   # % de pixels pretos dentro (após Otsu)
+DARK_DROP_MIN = 35
+INNER_MAX     = 140
+FILL_RATIO_MIN= 0.55
 
 def _resize_keep(img, target_w):
     h, w = img.shape[:2]
@@ -256,7 +312,6 @@ def _circle_measures(gray, x, y, r):
     ring_mean  = float(gray[mask_ring].mean())
     drop = ring_mean - inner_mean
 
-    # Fração de “pretos” no interior (binarizando por Otsu)
     inner_vals = gray[mask_in].astype(np.uint8)
     _th, inner_bin = cv2.threshold(inner_vals, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     fill_ratio = float((inner_bin == 0).sum()) / float(inner_bin.size)
@@ -266,8 +321,7 @@ def _circle_measures(gray, x, y, r):
 def _is_filled(inner_mean, drop, fill_ratio):
     return (drop >= DARK_DROP_MIN) and (inner_mean <= INNER_MAX) and (fill_ratio >= FILL_RATIO_MIN)
 
-def _nms_nearby(circles, thr=0.75):
-    """junta círculos muito próximos; fica com o de maior 'r'."""
+def _nms_nearby(circles, thr=0.8):
     if not circles: return circles
     circles = sorted(circles, key=lambda c: c["r"], reverse=True)
     kept = []
@@ -290,8 +344,6 @@ def detect_bubbles_opencv(image_path: Path):
     gray = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8)).apply(gray)
 
     H, W = gray.shape[:2]
-
-    # Limita à área de respostas (evita cabeçalho): de ~18% a 95% da altura
     y0 = int(0.18 * H)
     y1 = int(0.95 * H)
     roi = gray[y0:y1, :]
@@ -304,7 +356,6 @@ def detect_bubbles_opencv(image_path: Path):
         if m is None: continue
         inner, ring, drop, fill_ratio = m
         if _is_filled(inner, drop, fill_ratio):
-            # volta para coords da imagem ORIGINAL
             results.append({
                 "x": float(x/s),
                 "y": float(y_abs/s),
@@ -316,13 +367,12 @@ def detect_bubbles_opencv(image_path: Path):
     results = _nms_nearby(results, thr=0.8)
     return results
 
-# --- endpoint (use seu nome de app/Blueprint) ---
 @app.post("/api/detect_bubbles")
+@login_required
 def api_detect_bubbles():
     try:
         data = request.get_json(force=True, silent=True) or {}
         image_name = data.get("image") or None
-        # prioridade: /uploads/<image>, senão raiz
         cand = [UPLOAD_FOLDER, BASE_DIR]
         img_path = None
         for base in cand:
@@ -333,7 +383,6 @@ def api_detect_bubbles():
             return {"ok": False, "error": "Imagem não encontrada."}, 400
 
         circles = detect_bubbles_opencv(img_path)
-        # salva também no bubbles.json (opcional)
         out = {"image": img_path.name, "circles": [{"x":c["x"],"y":c["y"],"r":c["r"]} for c in circles]}
         (Path(UPLOAD_FOLDER)/"bubbles.json").write_text(
             json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -345,6 +394,7 @@ def api_detect_bubbles():
 # ===================== Respostas por aluno =====================
 
 @app.route('/respostas', methods=['GET', 'POST'])
+@login_required
 def verificar_respostas():
     uploads = app.config['UPLOAD_FOLDER']
     arquivos_disponiveis = [
@@ -389,6 +439,7 @@ def verificar_respostas():
 # ===================== Dashboard =====================
 
 @app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
 def dashboard():
     uploads = app.config['UPLOAD_FOLDER']
     arquivos_disponiveis = [
@@ -429,10 +480,7 @@ def dashboard():
 
         alvo_gabarito = 'cursinhoinsper@insper.edu.br'
         mask_gab = df[COL_EMAIL].astype(str).str.strip().str.lower() == alvo_gabarito
-        if mask_gab.any():
-            idx_gab = df.index[mask_gab][0]
-        else:
-            idx_gab = df.index[0]
+        idx_gab = df.index[mask_gab][0] if mask_gab.any() else df.index[0]
 
         gabarito = df.loc[idx_gab]
         alunos_df = df.drop(index=idx_gab).copy()
@@ -526,25 +574,22 @@ def dashboard():
     except Exception as e:
         return f'Erro ao processar o dashboard: {e}'
 
-# ===================== Run =====================
-
-
-from flask import render_template, request
-import pandas as pd, numpy as np, os
+# ===================== Dashboard de Marketing =====================
 
 @app.route('/dashboard_marketing', methods=['GET', 'POST'])
+@login_required
 def dashboard_marketing():
     uploads_dir = os.path.join(app.root_path, 'uploads_marketing')
+    if not os.path.isdir(uploads_dir):
+        os.makedirs(uploads_dir, exist_ok=True)
     arquivos = [f for f in os.listdir(uploads_dir) if f.lower().endswith(('.xlsx', '.xls'))]
     arquivo = request.form.get('arquivo') or (arquivos[0] if arquivos else None)
     if not arquivo:
         return render_template('dashboard_marketing.html', arquivos=arquivos, arquivo=None,
                                erro="Nenhum arquivo encontrado em uploads_marketing.")
 
-    # Carrega planilha
     df = pd.read_excel(os.path.join(uploads_dir, arquivo))
 
-    # Normalização leve de nomes que usamos nos gráficos/filtros
     rename_map = {
         'Data do Post':'data','Plataforma':'plataforma','Tipo de Conteúdo':'tipo','Tema do Post':'tema',
         'Post Turbinado? (Instagram)':'turbinado','Público-alvo':'publico','Link do Post':'link_post',
@@ -555,7 +600,6 @@ def dashboard_marketing():
     }
     df = df.rename(columns={k:v for k,v in rename_map.items() if k in df.columns})
 
-    # Converte números (vírgula → ponto) e garante colunas
     num_cols = ['impressoes','views','curtidas','comentarios','compart','cliques_link','salvamentos','cliques_perfil','eficiencia','engajamento']
     for c in num_cols:
         if c not in df.columns: df[c] = np.nan
@@ -567,7 +611,6 @@ def dashboard_marketing():
     for c in ['plataforma','tipo','tema','turbinado','publico','link','data']:
         if c not in df.columns: df[c] = ''
 
-    # Label curto p/ eixo X
     def make_label(row):
         d = pd.to_datetime(row.get('data'), errors='coerce')
         ds = d.strftime('%d/%m') if not pd.isna(d) else str(row.get('data') or '')
@@ -576,7 +619,6 @@ def dashboard_marketing():
         return f"{ds} • {str(row.get('tipo') or '').lower()} • {tema}"
     df['label'] = df.apply(make_label, axis=1)
 
-    # Filtros dinâmicos
     sel = {
         'plataforma': request.form.get('plataforma', 'Todos'),
         'tipo_conteudo': request.form.get('tipo_conteudo', 'Todos'),
@@ -602,7 +644,6 @@ def dashboard_marketing():
     if sel['turbinado']    != 'Todos': fdf = fdf[fdf['turbinado'].astype(str)==sel['turbinado']]
     if sel['publico']      != 'Todos': fdf = fdf[fdf['publico'].astype(str)==sel['publico']]
 
-    # --------- MÉTRICAS RESUMO (para a tabela de estatísticas) ---------
     metric_series = {
         'Visualizações': fdf['views'],
         'Curtidas': fdf['curtidas'],
@@ -630,7 +671,6 @@ def dashboard_marketing():
         }
     metrics_table = {nome: resumo(serie) for nome, serie in metric_series.items()}
 
-    # --------- DADOS DOS GRÁFICOS ---------
     def safe_list(vals):
         out = []
         for v in vals:
@@ -652,7 +692,7 @@ def dashboard_marketing():
         'cliques_link': safe_list(fdf['cliques_link'].fillna(0).tolist()),
         'compart': safe_list(fdf['compart'].fillna(0).tolist()),
         'salvamentos': safe_list(fdf['salvamentos'].fillna(0).tolist()),
-        'top5_labels': safe_list([])  # placeholder; preenchido abaixo
+        'top5_labels': safe_list([])  # preenchido abaixo
     }
     top5 = fdf[['label','eficiencia']].dropna().sort_values('eficiencia', ascending=False).head(5)
     charts_payload['top5'] = {
@@ -660,15 +700,10 @@ def dashboard_marketing():
         'values': safe_list(top5['eficiencia'].tolist())
     }
 
-    # --------- TABELA DE POSTS COMPLETA ---------
-    # Mantém TODAS as colunas do arquivo; move 'link' para o fim e adiciona uma coluna "Imagem"
     display_cols = list(df.columns)
-    # Se 'link' ou 'Link' existirem, deixamos como coluna normal; preview usa essa URL
     if 'link' not in display_cols: df['link'] = '' ; display_cols.append('link')
-    # Constrói registros p/ template
     tabela = fdf[display_cols].fillna('').to_dict(orient='records')
 
-    # data mais recente
     try:
         ate_data = pd.to_datetime(df['data'], errors='coerce').max()
         ate_data = ate_data.strftime('%d/%m/%Y') if pd.notna(ate_data) else ''
