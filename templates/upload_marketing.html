@@ -22,44 +22,30 @@
     .sidebar { width: var(--sidebar-w); transform: translateX(-100%); transition: transform .25s ease; }
     body.sidebar-open .sidebar { transform: translateX(0); }
 
-    .overlay {
-      position: fixed; inset: 0; background: rgba(15,23,42,.45);
-      opacity: 0; pointer-events: none; transition: opacity .2s ease;
-      backdrop-filter: blur(2px); z-index: 30;
-    }
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; backdrop-filter: blur(2px); z-index: 30; }
     body.sidebar-open .overlay { opacity: 1; pointer-events: auto; }
 
     .fab-open { position: fixed; top: 1rem; left: 1rem; z-index: 50; transition: opacity .2s ease; }
     body.sidebar-open .fab-open { opacity: 0; pointer-events: none; }
 
     /* Dropzone visual */
-    .dropzone {
-      border: 2px dashed #cbd5e1; /* slate-300 */
-      border-radius: 0.75rem;
-      transition: background .15s ease, border-color .15s ease;
-    }
-    .dropzone.dragover {
-      background: #f8fafc; /* slate-50/100 */
-      border-color: #3b82f6; /* blue-500 */
-    }
+    .dropzone { border: 2px dashed #cbd5e1; border-radius: 0.75rem; transition: background .15s ease, border-color .15s ease; cursor: pointer; }
+    .dropzone.dragover { background: #f8fafc; border-color: #3b82f6; }
   </style>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
 
   <!-- Botão flutuante de abrir menu -->
-  <button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
-          aria-label="Abrir menu">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
-    </svg>
+  <button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50" aria-label="Abrir menu">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
   </button>
 
   <!-- Overlay -->
-  <div class="overlay"></div>
+  <div class="overlay" aria-hidden="true"></div>
 
-  <!-- Sidebar (mesma identidade) -->
-  <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
+  <!-- Sidebar -->
+  <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur" aria-label="Menu lateral">
     <div class="h-full flex flex-col">
       <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
@@ -68,9 +54,7 @@
           <div class="text-[11px] text-slate-500">Marketing</div>
         </div>
         <button id="btnClose" class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/></svg>
         </button>
       </div>
 
@@ -112,27 +96,30 @@
           </p>
         </div>
 
-        <form id="uploadForm" method="POST" action="/upload_marketing" enctype="multipart/form-data" class="px-6 py-6 space-y-6">
-          <div id="dropzone" class="dropzone bg-white p-6 flex flex-col items-center justify-center text-center cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
+        <form id="uploadForm" method="POST" action="/upload_marketing" enctype="multipart/form-data" class="px-6 py-6 space-y-6" autocomplete="off">
+          <div id="dropzone" role="button" tabindex="0" aria-label="Selecione um arquivo .xlsx ou .xls"
+               class="dropzone bg-white p-6 flex flex-col items-center justify-center text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M19.35 10.04A7.49 7.49 0 005.5 8.5a5.5 5.5 0 00-1.1 10.89H19a4 4 0 00.35-7.95zM11 14v4h2v-4h3l-4-4-4 4h3z"/>
             </svg>
             <p class="mt-3 text-sm text-slate-600">
               Arraste e solte o arquivo aqui, ou
               <label for="fileInput" class="text-blue-600 font-medium cursor-pointer hover:underline">clique para selecionar</label>.
             </p>
-            <p class="mt-1 text-xs text-slate-500">Aceita <strong>.xlsx</strong> e <strong>.xls</strong>.</p>
+            <p class="mt-1 text-xs text-slate-500">Aceita <strong>.xlsx</strong> e <strong>.xls</strong>. Tamanho máx.: 50 MB.</p>
 
             <input id="fileInput" type="file" name="file" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" required>
-            <div id="fileInfo" class="mt-3 text-sm text-slate-700 hidden"></div>
+            <div id="fileInfo" aria-live="polite" class="mt-3 text-sm text-slate-700 hidden"></div>
           </div>
 
           <div class="flex items-center justify-end gap-3">
-            <a href="/" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-              Cancelar
-            </a>
-            <button type="submit" class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">
-              Enviar e abrir dashboard
+            <a href="/" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">Cancelar</a>
+            <button id="btnUpload" type="submit" class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">
+              <span class="btn-text">Enviar e abrir dashboard</span>
+              <svg class="btn-spin hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
             </button>
           </div>
         </form>
@@ -155,7 +142,7 @@
                 {% endfor %}
               </select>
               <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
               </div>
@@ -163,12 +150,8 @@
           </div>
 
           <div class="flex items-center justify-end gap-3">
-            <a href="/dashboard_marketing" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-              Abrir padrão
-            </a>
-            <button type="submit" class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">
-              Abrir selecionado
-            </button>
+            <a href="/dashboard_marketing" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">Abrir padrão</a>
+            <button type="submit" class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">Abrir selecionado</button>
           </div>
         </form>
       </div>
@@ -195,17 +178,31 @@
     overlay?.addEventListener('click', closeSidebar);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
+    // Evita navegação ao soltar arquivo fora da dropzone
+    ['dragover','drop'].forEach(evt => {
+      window.addEventListener(evt, e => { e.preventDefault(); });
+    });
+
     // Drag & Drop + validação
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     const fileInfo = document.getElementById('fileInfo');
     const uploadForm = document.getElementById('uploadForm');
+    const btnUpload = document.getElementById('btnUpload');
+    const MAX_MB = 50;
 
     const setFile = (file) => {
       if (!file) return;
       const ok = /\.(xlsx|xls)$/i.test(file.name);
       if (!ok) {
         alert('Selecione um arquivo .xlsx ou .xls.');
+        fileInput.value = '';
+        fileInfo.classList.add('hidden');
+        fileInfo.textContent = '';
+        return;
+      }
+      if (file.size > MAX_MB * 1024 * 1024) {
+        alert(`Arquivo acima de ${MAX_MB} MB.`);
         fileInput.value = '';
         fileInfo.classList.add('hidden');
         fileInfo.textContent = '';
@@ -219,6 +216,9 @@
     };
 
     dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+    });
     fileInput.addEventListener('change', (e) => setFile(e.target.files?.[0]));
 
     ['dragenter','dragover'].forEach(evt => {
@@ -240,10 +240,16 @@
 
     uploadForm.addEventListener('submit', (e) => {
       const f = fileInput.files?.[0];
-      if (!f || !/\.(xlsx|xls)$/i.test(f.name)) {
+      if (!f || !/\.(xlsx|xls)$/i.test(f.name) || f.size > MAX_MB * 1024 * 1024) {
         e.preventDefault();
-        alert('Selecione um arquivo .xlsx ou .xls válido antes de enviar.');
+        alert('Selecione um arquivo .xlsx ou .xls válido (até 50 MB) antes de enviar.');
+        return;
       }
+      // feedback de envio
+      btnUpload.disabled = true;
+      btnUpload.classList.add('opacity-75','cursor-not-allowed');
+      btnUpload.querySelector('.btn-text').textContent = 'Enviando...';
+      btnUpload.querySelector('.btn-spin').classList.remove('hidden');
     });
   </script>
 </body>
