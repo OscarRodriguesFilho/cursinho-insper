@@ -36,10 +36,25 @@
     .carousel-img, .carousel-video { max-height:320px; width:auto; object-fit:contain; }
     .carousel-iframe { width:100%; height:320px; border:0; }
 
-    /* Prévia da tabela (mídia) */
+    /* Prévia (tabela) */
     .preview-media-wrap { width:100%; display:flex; justify-content:center; align-items:center; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:0.75rem; overflow:hidden; }
     .preview-img, .preview-video { max-height:420px; width:auto; object-fit:contain; }
     .preview-iframe { width:100%; height:420px; border:0; }
+
+    /* Chips (se precisar futuramente) */
+    .chip{ display:inline-flex; align-items:center; gap:.4rem; padding:.25rem .5rem; background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; border-radius:.5rem; font-size:.7rem; }
+    .chip-gray{ background:#f1f5f9; color:#334155; border-color:#e2e8f0; }
+
+    /* ====== MODAIS + RAPOSA SMART ====== */
+    .modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(2,6,23,.45); backdrop-filter: blur(3px); }
+    .modal-hidden { display: none !important; }
+    .raposa-fab{
+      position: fixed; right: 1rem; bottom: 1rem; z-index: 70;
+      width: 100px; height: 100px;
+    }
+    @media (max-width: 640px){
+      .raposa-fab{ width: 84px; height: 84px; }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
@@ -79,7 +94,6 @@
             </a>
           </li>
           <li>
-            <!-- Placeholder sem navegação -->
             <a href="#" aria-disabled="true" onclick="return false;"
                class="nav-link text-sm text-slate-400 opacity-60 cursor-not-allowed select-none">
               <svg class="icon text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -121,29 +135,25 @@
         </ul>
       </nav>
 
-      <!-- Rodapé da sidebar: redes + logout -->
+      <!-- Rodapé da sidebar -->
       <div class="mt-auto border-t border-slate-200 px-2 py-3">
         <div class="flex items-center justify-between px-1 pb-3">
-          <!-- Site oficial (imagem, borda preta) -->
           <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black bg-white hover:bg-slate-50 shadow-sm transition"
              href="https://cursinhoinsper.org/?utm_source=instagram&utm_medium=post&utm_campaign=voluntarios_alunos&utm_id=0"
              target="_blank" rel="noopener noreferrer" title="Site oficial" aria-label="Site oficial">
             <img src="https://cursinhoinsper.org/assets/images/apple-touch-icon.png?v=072e23cf"
                  alt="Cursinho Insper" class="h-5 w-5 object-contain" />
           </a>
-          <!-- Instagram -->
           <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 via-fuchsia-500 to-yellow-400 hover:opacity-90 shadow-sm transition"
              href="https://www.instagram.com/cursinho.insper/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm5 4a5 5 0 100 10 5 5 0 000-10zm6.5.75a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM12 9a3 3 0 110 6 3 3 0 010-6z"/></svg>
           </a>
-          <!-- TikTok -->
           <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-black hover:bg-neutral-800 shadow-sm transition"
              href="https://www.tiktok.com/@cursinho.insper" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="white" aria-hidden="true">
               <path d="M168.2 32c8.4 17.7 24.5 31.3 43.8 35.6v35.1c-16.1-.7-31.4-6-44.5-15.1v60.6c0 38.9-31.6 70.5-70.5 70.5S26.5 186.1 26.5 147.2 58.1 76.7 97 76.7c7.2 0 14.2 1.1 20.7 3.2v36.5a35.6 35.6 0 00-20.7-6.5c-20.1 0-36.4 16.3-36.4 36.4s16.3 36.4 36.4 36.4 36.4-16.3 36.4-36.4V32h35.8z"/>
             </svg>
           </a>
-          <!-- LinkedIn -->
           <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A66C2] hover:bg-[#0857A6] shadow-sm transition"
              href="https://www.linkedin.com/company/78313776/admin/dashboard/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -151,7 +161,6 @@
             </svg>
           </a>
         </div>
-
         <a href="/logout" class="nav-link text-sm text-slate-700">
           <svg class="icon text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg>
           <span>Logout</span>
@@ -177,35 +186,35 @@
         <input type="hidden" name="arquivo" value="{{ arquivo }}">
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Plataforma</label>
-          <select name="plataforma" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="plataforma" id="f_plataforma" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
             <option>Todos</option>
             {% for v in filtros_opts.plataforma %}<option {% if sel.plataforma==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de conteúdo</label>
-          <select name="tipo_conteudo" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="tipo_conteudo" id="f_tipo_conteudo" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
             <option>Todos</option>
             {% for v in filtros_opts.tipo_conteudo %}<option {% if sel.tipo_conteudo==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Tema do post</label>
-          <select name="tema_post" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="tema_post" id="f_tema_post" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
             <option>Todos</option>
             {% for v in filtros_opts.tema_post %}<option {% if sel.tema_post==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Post Turbinado? (Instagram)</label>
-          <select name="turbinado" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="turbinado" id="f_turbinado" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
             <option>Todos</option>
             {% for v in filtros_opts.turbinado %}<option {% if sel.turbinado==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Público-alvo</label>
-          <select name="publico" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="publico" id="f_publico" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
             <option>Todos</option>
             {% for v in filtros_opts.publico %}<option {% if sel.publico==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
@@ -273,12 +282,50 @@
               <button id="prevSlide" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">⬅ Anterior</button>
               <button id="nextSlide" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">Próximo ➡</button>
             </div>
+
+            <!-- Toggle Eficiência / Anotar (bolinha on/off) -->
+            <div class="mt-3 flex items-center">
+              <div class="inline-flex items-center gap-2">
+                <button id="toggleNote" role="switch" aria-checked="false"
+                        class="relative h-6 w-11 rounded-full bg-slate-300 transition-colors focus-ring">
+                  <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform translate-x-0"></span>
+                </button>
+                <span class="text-xs text-slate-500">Anotar</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <h3 class="mt-6 text-base font-semibold text-slate-900">Eficiência (escala 0–100, barras horizontais)</h3>
-        <div class="mt-3 h-[320px]"><canvas id="chartEff"></canvas></div>
-        <p class="mt-1 text-[11px] text-slate-500">Eixo Y: datas. Visualizações/curtidas corrigidas (÷10). Visualizações entram divididas por 10.000 na eficiência.</p>
+        <div class="mt-6 flex items-center justify-between">
+          <h3 id="effNoteTitle" class="text-base font-semibold text-slate-900">Eficiência (escala 0–100, barras horizontais)</h3>
+        </div>
+
+        <!-- Área alternável -->
+        <div class="mt-3 h-[320px]">
+          <!-- Vista Gráfico -->
+          <div id="effView" class="h-full">
+            <canvas id="chartEff"></canvas>
+            <p class="mt-1 text-[11px] text-slate-500">Eixo Y: datas. Visualizações/curtidas corrigidas (÷10). Visualizações entram ÷10.000 na eficiência.</p>
+          </div>
+          <!-- Vista Anotação -->
+          <div id="noteView" class="h-full hidden">
+            <div class="h-full flex flex-col">
+              <textarea id="noteText"
+                        class="focus-ring flex-1 min-h-[340px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                        placeholder="Escreva sua anotação sobre o item atual do carrossel/tabela…"></textarea>
+              <div class="mt-2 flex items-center justify-end">
+                <button id="btnSaveNote"
+                        class="focus-ring inline-flex items-center justify-center rounded-full bg-blue-600 p-2 text-white hover:bg-blue-700"
+                        aria-label="Salvar anotação" title="Salvar anotação">
+                  <!-- Ícone disquete -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a1 1 0 0 0 .71-.29l2-2A1 1 0 0 0 22 18V7a4 4 0 0 0-1.17-2.83l-1-1A4 4 0 0 0 17 3Zm-2 2v4H7V5Zm5 14H5V5h0v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V5h0a2 2 0 0 1 1.41.59l1 1A2 2 0 0 1 21 7v11Z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -326,9 +373,7 @@
         <div class="sticky top-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 class="text-base font-semibold text-slate-900">Prévia (tabela)</h3>
           <div class="mt-3 w-full overflow-hidden rounded-xl preview-media-wrap">
-            <!-- Agora é dinâmico: imagem OU vídeo OU iframe -->
             <div id="previewMedia" class="w-full flex justify-center items-center">
-              <!-- placeholder -->
               <img class="preview-img" alt="Prévia do post"
                    src="data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22&gt;&lt;rect width=%22400%22 height=%22300%22 fill=%22%23f1f5f9%22/&gt;&lt;text x=%22200%22 y=%22160%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%2394a3b8%22&gt;Prévia indisponível&lt;/text&gt;&lt;/svg%3E">
             </div>
@@ -382,6 +427,43 @@
     </footer>
   </main>
 
+  <!-- ===== FAB Raposa Smart ===== -->
+  <button id="btnRaposaFab"
+    class="raposa-fab focus-ring rounded-full border border-slate-200 bg-white p-3 shadow-lg hover:shadow-xl"
+    title="Falar com a Raposa Smart" aria-label="Falar com a Raposa Smart">
+    <img src="https://cursinhoinsper.org/assets/images/image03.png?v=072e23cf"
+         alt="Raposa Smart"
+         class="h-full w-full object-contain" />
+  </button>
+
+  <!-- ===== Modal Raposa Smart ===== -->
+  <div id="raposaModal" class="modal-backdrop modal-hidden">
+    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h3 class="text-base font-semibold text-slate-900">Raposa Smart</h3>
+          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeRaposa()">✕</button>
+        </div>
+        <div class="px-4 py-4 space-y-3">
+          <p class="text-sm text-slate-600">Faça perguntas sobre desempenho das publicações, funil e KPIs.</p>
+          <div>
+            <label for="raposaPergunta" class="block text-xs font-medium text-slate-600">Sua pergunta</label>
+            <textarea id="raposaPergunta" rows="5" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Ex.: Quais posts com eficiência &gt; 80% tiveram mais salvamentos?"></textarea>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
+          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeRaposa()">Cancelar</button>
+          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700" onclick="askRaposa()">Enviar pergunta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Toast ===== -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] hidden">
+    <div class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg">Ação concluída!</div>
+  </div>
+
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -393,9 +475,9 @@
     btnOpen?.addEventListener('click', toggleSidebar);
     btnClose?.addEventListener('click', closeSidebar);
     overlay?.addEventListener('click', closeSidebar);
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSidebar(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeSidebar(); closeRaposa(); }});
 
-    // Marca o item ativo (ignora externos e desativados)
+    // Marca o item ativo
     (function markActive(){
       const path = location.pathname.replace(/\/+$/, '') || '/';
       document.querySelectorAll('.nav-link').forEach(a => {
@@ -408,7 +490,7 @@
       });
     })();
 
-    // ========= utilidades de mídia (imagem/vídeo/drive) =========
+    // ========= utilidades de mídia =========
     function getDriveId(url){
       try{
         const u = new URL(url);
@@ -427,7 +509,6 @@
     }
     function isVideoUrl(url){ return /\.(mp4|webm|ogg)(\?.*)?$/i.test(url); }
     function isImageUrl(url){ return /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(url); }
-
     function normalizeImageUrl(url) {
       if (!url) return '';
       try {
@@ -446,7 +527,14 @@
         return url;
       }
     }
-
+    // fallback para imagens
+    window.__imgFallback = function(el){
+      try{
+        const src = el.getAttribute('data-src-original') || el.src || '';
+        const m = src.match(/\/d\/([^/]+)/) || src.match(/[?&]id=([^&]+)/);
+        if (m && m[1]) el.src = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
+      }catch(_){}
+    };
     function mediaHTML(url, opts={context:'carousel'}){
       if(!url) return '';
       if (isDriveUrl(url)){
@@ -458,7 +546,7 @@
       }
       const imgUrl = isImageUrl(url) ? url : normalizeImageUrl(url);
       const cls = opts.context==='preview' ? 'preview-img' : 'carousel-img';
-      return `<img class="${cls}" src="${imgUrl}" alt="mídia">`;
+      return `<img class="${cls}" src="${imgUrl}" loading="lazy" onerror="window.__imgFallback(this)" data-src-original="${imgUrl}" alt="mídia">`;
     }
 
     // ========= Busca global na tabela =========
@@ -484,7 +572,6 @@
 
     // ========== Dados do backend ==========
     let payload = {{ charts_payload|tojson }};
-
     function reconstructFromTable(){
       const rows = Array.from(document.querySelectorAll('#tabelaPosts tbody tr'));
       const headers = Array.from(document.querySelectorAll('#tabelaPosts thead th')).map(h => (h.textContent||'').toLowerCase().trim());
@@ -492,8 +579,8 @@
       rows.forEach(r=>{
         const cells = Array.from(r.cells).map(c => (c.textContent||'').trim());
         linksImg.push(r.dataset.img||'');
-        let label = cells[0] || '';
         let v=0, like=0, com=0, comp=0, salv=0, clkLink=0, clkPerfil=0, tipo='', dataTxt='';
+        const label = cells[0] || '';
         cells.forEach((txt,i)=>{
           const h = headers[i]||''; const num = Number(String(txt).replace(/[^0-9\-,\.]/g,'').replace(/\./g,'').replace(',','.'))||0;
           if (h.includes('alcance') || h.includes('visualiza')) v = num;
@@ -512,7 +599,6 @@
       });
       return { labels, views, curtidas, comentarios, compart, salvamentos, cliques_link, cliques_perfil, tipos, datas, linksImg };
     }
-
     if (!payload || !Array.isArray(payload.labels) || payload.labels.length === 0) {
       payload = reconstructFromTable();
     }
@@ -531,8 +617,15 @@
     }
     const DATA_VEC = ensureDates(payload);
 
+    // Utilitário: agenda desenho quando Chart estiver disponível
+    function scheduleDraw(fn){
+      if (typeof Chart !== 'undefined') { try { fn(); } catch(e){ console.error(e); } }
+      else { window.addEventListener('load', ()=>{ try { fn(); } catch(e){ console.error(e); } }, { once:true }); }
+    }
+
     // KPIs + gráfico principal
-    if (payload) {
+    function drawMainChart(){
+      if (!payload) return;
       const labels = payload.labels || [];
       const viewsK = (payload.views||[]).map(v => Math.round(((+v||0)/1000)*100)/100);
       const sum = (a)=> (a||[]).reduce((x,y)=> x + (+y||0), 0);
@@ -555,15 +648,16 @@
         el.innerHTML = Object.entries(dataMap).map(([k,v])=>`
           <div class="rounded-xl border border-slate-200 bg-white px-3 py-3">
             <div class="text-[11px] uppercase tracking-wide text-slate-500">${k}</div>
-            <div class="mt-1 text-xl font-semibold text-slate-900">${Number.isFinite(v)? v.toLocaleString('pt-BR') : v}</div>
+            <div class="mt-1 text-xl font-semibold text-slate-900">${Number.isFinite(+v)? Number(v).toLocaleString('pt-BR') : v}</div>
           </div>
         `).join('');
       }
       paintKPIs('kpis', k1);
       paintKPIs('kpis2', k2);
 
-      // Gráfico principal
-      new Chart(document.getElementById('chartPorPost'), {
+      const el = document.getElementById('chartPorPost');
+      if(!el) return;
+      new Chart(el, {
         type:'bar',
         data:{
           labels,
@@ -589,9 +683,10 @@
         }
       });
     }
+    scheduleDraw(drawMainChart);
 
     // --------- EFICIÊNCIA ----------
-    (function makeEfficiency(){
+    function makeEfficiency(){
       if(!payload) return;
       const tipos  = (payload.tipos||payload.tipo||payload.types||[]).map(t => (t||'').toString().toLowerCase());
       const datas  = DATA_VEC;
@@ -605,7 +700,7 @@
         'stories':{ imp:0, views:2, curt:0, com:0, comp:4, perfil:4, salv:0, link:4 },
         'reels':{ imp:2, views:2, curt:2, com:4, comp:4, perfil:4, salv:3, link:0 }
       };
-      const rawScores=[], byKey={};
+      const rawScores=[];
       for(let i=0;i<n;i++){
         const w=W[tipos[i]]||W['posts'];
         const views=val(payload.views,i)/10000.0;
@@ -642,7 +737,8 @@
           scales:{ x:{ beginAtZero:true, max:100, grid:{color:'rgba(148,163,184,0.25)'} }, y:{ grid:{display:false} } }
         }
       });
-    })();
+    }
+    scheduleDraw(makeEfficiency);
 
     // --------- CARROSSEL ----------
     function effForItem(link, date, label){
@@ -656,7 +752,6 @@
       }
       return 0;
     }
-
     function buildImagesFromTable(){
       const rows = Array.from(document.querySelectorAll('#tabelaPosts tbody tr'));
       const headers = Array.from(document.querySelectorAll('#tabelaPosts thead th')).map(h => (h.textContent||'').toLowerCase().trim());
@@ -677,21 +772,21 @@
         });
         curtidas = Math.round(curtidas/10);
         const interacoes = salv + comentarios + clkLink;
-        const eff = effForItem(urlRaw, dateText, label);
-        return { url, label, dateText, curtidas, interacoes, efficiency: eff };
+        const efficiency = effForItem(urlRaw, dateText, label);
+        return { url, label, dateText, curtidas, interacoes, efficiency };
       });
     }
-
     function renderCarousel(items, startIndex=0){
       const wrap = document.getElementById('carousel');
       if(!wrap) return;
       wrap.innerHTML = items.map(({url})=> `<div class="carousel-item">${mediaHTML(url, {context:'carousel'})}</div>`).join('');
       let index = Math.min(Math.max(0,startIndex), Math.max(0, items.length-1));
       function updateMetrics(){
-        const cur = items[index]||{ curtidas:0, interacoes:0, efficiency:0 };
+        const cur = items[index]||{ curtidas:0, interacoes:0, efficiency:0, url:'', label:'', dateText:'' };
         const likeEl = document.getElementById('carouselLikes'); if (likeEl) likeEl.textContent = (cur.curtidas||0).toLocaleString('pt-BR');
         const intEl  = document.getElementById('carouselInteractions'); if (intEl) intEl.textContent = (cur.interacoes||0).toLocaleString('pt-BR');
         const effEl  = document.getElementById('carouselEfficiency'); if (effEl) effEl.textContent = Math.round(cur.efficiency||0);
+        window.__currentCarouselItem = cur; // contexto do item
       }
       function updatePreview(){
         const cur = items[index];
@@ -708,8 +803,17 @@
       });
       wrap.scrollTo({ left: wrap.clientWidth*index, behavior:'auto' });
       updatePreview(); updateMetrics();
-    }
 
+      // Observa imagens para lazy + fallback
+      const obs = new MutationObserver(()=>{
+        wrap.querySelectorAll('img.carousel-img, img.preview-img').forEach(img=>{
+          img.loading = 'lazy';
+          if(!img.getAttribute('data-src-original')) img.setAttribute('data-src-original', img.src || '');
+          img.onerror = function(){ window.__imgFallback(this); };
+        });
+      });
+      obs.observe(wrap, { childList:true, subtree:true });
+    }
     let carouselImages = buildImagesFromTable();
     renderCarousel(carouselImages, 0);
 
@@ -754,7 +858,7 @@
         `Meta: ${metaPublico.toLocaleString('pt-BR')} • Atingido: ${publicoAtingido.toLocaleString('pt-BR')} (${pctMeta.toFixed(1)}%) • Leads: ${leads.toLocaleString('pt-BR')} (${pctLeads.toFixed(1)}%) • Novos usuários: ${novosUsuarios.toLocaleString('pt-BR')}`;
 
       const svg = document.getElementById('funnelSvg'); if(!svg) return;
-      const W = svg.viewBox.baseVal.width || 900, H = svg.viewBox.baseVal.height || 275;
+      const W = svg.viewBox.baseVal.width || 900;
       const cx = W/2, topY = 30, step = 58, heights = 38;
 
       const stages = [
@@ -795,6 +899,159 @@
         svg.appendChild(tLab);
       });
     })();
+
+    /* ==========================
+       COMENTÁRIOS – API mínima
+       ========================== */
+    window.API = {
+      async add(comment) {
+        try {
+          const r = await fetch('/api/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(comment),
+          });
+          if (!r.ok) throw new Error('bad status');
+          return await r.json();
+        } catch {
+          // Fallback localStorage
+          const key = 'mk_comments_v1';
+          const cur = JSON.parse(localStorage.getItem(key) || '[]');
+          cur.push({ id: `ls_${Date.now()}`, created_at: Date.now(), ...comment });
+          localStorage.setItem(key, JSON.stringify(cur));
+          return { ok: true };
+        }
+      }
+    };
+
+    // --- Toggle (bolinha) Eficiência / Anotar ---
+    (function setupToggle(){
+      const btnToggle = document.getElementById('toggleNote');
+      const effView = document.getElementById('effView');
+      const noteView = document.getElementById('noteView');
+      const titleEl = document.getElementById('effNoteTitle');
+
+      function setMode(noteOn){
+        if (noteOn){
+          effView.classList.add('hidden');
+          noteView.classList.remove('hidden');
+          titleEl.textContent = 'Comentários';
+          btnToggle.setAttribute('aria-checked','true');
+          btnToggle.classList.remove('bg-slate-300'); btnToggle.classList.add('bg-blue-600');
+          const knob = btnToggle.querySelector('span');
+          knob.style.transform = 'translateX(20px)';
+        }else{
+          noteView.classList.add('hidden');
+          effView.classList.remove('hidden');
+          titleEl.textContent = 'Eficiência (escala 0–100, barras horizontais)';
+          btnToggle.setAttribute('aria-checked','false');
+          btnToggle.classList.add('bg-slate-300'); btnToggle.classList.remove('bg-blue-600');
+          const knob = btnToggle.querySelector('span');
+          knob.style.transform = 'translateX(0)';
+        }
+      }
+      setMode(false);
+      btnToggle?.addEventListener('click', ()=>{
+        const on = btnToggle.getAttribute('aria-checked') === 'true';
+        setMode(!on);
+      });
+
+      // Salvar anotação do item atual
+      document.getElementById('btnSaveNote')?.addEventListener('click', async ()=>{
+        const t = (document.getElementById('noteText')?.value || '').trim();
+        if(!t){ alert('Escreva algo antes de salvar.'); return; }
+        const it = window.__currentCarouselItem || { url:'', label:'', dateText:'' };
+        const ctxKey = it.url ? `i|link:${it.url}` : (it.label ? `i|label:${it.label}` : 'i|unknown');
+        const base = {
+          title:'', text:t, tag:'nota', scope:'item', created_at: Date.now(), arquivo:`{{ arquivo }}`,
+          ctx_key: ctxKey, item: { link: it.url, label: it.label, data: it.dateText }
+        };
+        try{
+          await window.API.add(base);
+          document.getElementById('noteText').value = '';
+          showToast('Anotação salva!');
+        }catch(e){ console.error(e); alert('Não foi possível salvar agora.'); }
+      });
+    })();
+
+    // ======= RAPOSA SMART (CHATBOT) =======
+    const raposaModal = document.getElementById('raposaModal');
+    const btnRaposaFab = document.getElementById('btnRaposaFab');
+    const raposaPergunta = document.getElementById('raposaPergunta');
+
+    btnRaposaFab?.addEventListener('click', () => {
+      raposaPergunta.value = '';
+      raposaModal.classList.remove('modal-hidden');
+      raposaPergunta.focus();
+    });
+    window.closeRaposa = () => raposaModal.classList.add('modal-hidden');
+
+    function readKpisSnapshot() {
+      // tenta ler os KPIs já renderizados
+      const map = {};
+      document.querySelectorAll('#kpis > div, #kpis2 > div').forEach(card=>{
+        const key = card.querySelector('div.text-[11px]')?.textContent?.trim();
+        const val = card.querySelector('.text-xl')?.textContent?.trim();
+        if(key) map[key] = val || '';
+      });
+      return map;
+    }
+
+    window.askRaposa = () => {
+      const pergunta = (raposaPergunta.value || '').trim();
+      if (!pergunta){ alert('Digite sua pergunta para a Raposa Smart.'); raposaPergunta.focus(); return; }
+
+      // contexto atual
+      const cur = window.__currentCarouselItem || {};
+      const filtros = {
+        plataforma: document.getElementById('f_plataforma')?.value || '',
+        tipo_conteudo: document.getElementById('f_tipo_conteudo')?.value || '',
+        tema_post: document.getElementById('f_tema_post')?.value || '',
+        turbinado: document.getElementById('f_turbinado')?.value || '',
+        publico: document.getElementById('f_publico')?.value || '',
+        busca: document.getElementById('busca')?.value || ''
+      };
+      const payload = {
+        pergunta,
+        arquivo: "{{ arquivo }}",
+        filtros,
+        item_atual: {
+          link: cur.url || '',
+          rotulo: cur.label || '',
+          data: cur.dateText || '',
+          curtidas_adj: cur.curtidas || 0,
+          interacoes: cur.interacoes || 0,
+          eficiencia: Math.round(cur.efficiency || 0)
+        },
+        kpis: readKpisSnapshot()
+      };
+
+      // Aqui você chama sua API real; por enquanto, só loga:
+      console.log('Pergunta para a Raposa Smart (Marketing):', payload);
+
+      showToast('Pergunta enviada à Raposa Smart!');
+      closeRaposa();
+    };
+
+    // Toast
+    function showToast(texto){
+      const toast = document.getElementById('toast');
+      toast.querySelector('div').textContent = texto || 'OK';
+      toast.classList.remove('hidden');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.add('hidden'), 2000);
+    }
+
+    // --- Inicializações tardias extra (segurança) ---
+    function initAfterLoad(){
+      try{
+        if (typeof Chart === 'undefined') return;
+      }catch(e){ console.error(e); }
+    }
+    if (document.readyState === 'complete') initAfterLoad();
+    else window.addEventListener('load', initAfterLoad, { once:true });
+
   </script>
 </body>
 </html>

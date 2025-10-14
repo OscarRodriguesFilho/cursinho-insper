@@ -186,14 +186,29 @@
       </div>
     </div>
 
-    <!-- Filtro de modalidade -->
-    <form method="POST" class="mt-4 mb-6 inline-flex items-center gap-3">
+    <!-- Filtros: Modalidade + Tipo de aluno -->
+    <form method="POST" class="mt-4 mb-6 inline-flex flex-wrap items-center gap-3">
+      <!-- Modalidade -->
       <label for="modalidade" class="text-sm font-medium text-slate-700">Modalidade:</label>
       <select name="modalidade" id="modalidade" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()">
         <option value="Geral" {% if modalidade_filtro == 'Geral' %}selected{% endif %}>Geral</option>
         <option value="Presencial" {% if modalidade_filtro == 'Presencial' %}selected{% endif %}>Presencial</option>
         <option value="Online" {% if modalidade_filtro == 'Online' %}selected{% endif %}>Online</option>
       </select>
+
+      <!-- NOVO: Tipo de aluno (condicional) -->
+      {% if has_reman_col %}
+        <label for="tipo_aluno" class="ml-2 text-sm font-medium text-slate-700">Tipo de aluno:</label>
+        <select name="tipo_aluno" id="tipo_aluno" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()" title="Coluna: {{ reman_col_name }}">
+          {% for opt in tipo_aluno_opcoes %}
+            <option value="{{ opt }}" {% if opt == tipo_aluno %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+        <span class="text-[11px] text-slate-500">Baseado em: <span class="font-medium">{{ reman_col_name }}</span></span>
+      {% else %}
+        <span class="text-[11px] text-slate-500">Coluna “Você é aluno remanescente?” não encontrada neste arquivo.</span>
+      {% endif %}
+
       <input type="hidden" name="arquivo" value="{{ arquivo }}">
     </form>
 

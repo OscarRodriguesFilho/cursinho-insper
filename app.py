@@ -3,7 +3,7 @@ from flask import (
     Flask, request, render_template, jsonify, send_from_directory,
     url_for, session, redirect, flash
 )
-import os, json
+import os, json, re, unicodedata
 import pandas as pd
 from collections import Counter
 
@@ -82,6 +82,42 @@ def login_required(fn):
         nxt = request.full_path if request.query_string else request.path
         return redirect(url_for("login", next=nxt))
     return wrapper
+
+# ===================== Normalização / Colunas =====================
+
+def _norm_text(s: str) -> str:
+    s = str(s or '')
+    s = s.strip().lower()
+    s = unicodedata.normalize('NFD', s)
+    s = ''.join(ch for ch in s if unicodedata.category(ch) != 'Mn')  # remove acentos
+    s = re.sub(r'[\u2010-\u2015\u2212\u2043\uFE63\uFF0D]', '-', s)   # normaliza hífens para '-'
+    s = re.sub(r'\s+', ' ', s)                                      # colapsa espaços
+    return s
+
+def find_email_column(columns) -> str | None:
+    """Tenta achar a coluna de e-mail usando normalização e keywords."""
+    norm_map = {col: _norm_text(col) for col in columns}
+
+    # candidatos exatos (normalizados)
+    candidates = {
+        'endereco de e-mail',
+        'endereco de email',
+        'e-mail',
+        'email',
+        'endereco de email',
+    }
+
+    # 1) match exato
+    for col, n in norm_map.items():
+        if n in candidates:
+            return col
+
+    # 2) contém 'email'
+    for col, n in norm_map.items():
+        if 'email' in n:
+            return col
+
+    return None
 
 # ===================== Rotas de Autenticação =====================
 
@@ -428,7 +464,7 @@ def verificar_respostas():
         alunos = df.iloc[1:]
 
         col_nome = 'Nome completo:'
-        col_email = 'Endereço de e-mail'
+        col_email = find_email_column(df.columns) or 'Endereço de e-mail'
         colunas_questoes = [col for col in df.columns if col not in [col_nome, col_email]]
 
         tabela = []
@@ -462,6 +498,16 @@ def dashboard():
     nome_arquivo = request.form.get('arquivo')
     modalidade_filtro = request.form.get('modalidade', 'Geral')
 
+    # Filtro "Tipo de aluno"
+    tipo_aluno = request.form.get('tipo_aluno', 'Todos')  # 'Todos' | 'Remanescente' | 'Não remanescente'
+    REMAN_COL_CANDIDATES = [
+        'Você é aluno remanescente?',
+        'Você é aluno remanscente?',
+        'Você é aluno remancescente?',
+        'Aluno remanescente?',
+        'Remanescente?'
+    ]
+
     if not nome_arquivo:
         return 'Nenhum arquivo selecionado.'
 
@@ -473,10 +519,12 @@ def dashboard():
 
         COL_NOME = 'Nome completo:'
         COL_MODALIDADE = 'Modalidade:'
-        possiveis_emails = ['Endereço de e-mail', 'Endereço de email', 'E-mail', 'Email', 'Endereço de Email']
-        COL_EMAIL = next((c for c in possiveis_emails if c in df.columns), None)
+
+        # >>> detecção robusta do e-mail
+        COL_EMAIL = find_email_column(df.columns)
         if COL_EMAIL is None:
-            return 'Coluna de e-mail não encontrada. Esperado: "Endereço de e-mail" (ou variações).'
+            cols_list = ', '.join([str(c) for c in df.columns])
+            return f'Coluna de e-mail não encontrada. Colunas vistas: [{cols_list}]'
 
         COLS_EXCLUIR = [
             'Carimbo de data/hora','Endereço de e-mail','Nome completo:','Número de matrícula:','Modalidade:',
@@ -494,11 +542,25 @@ def dashboard():
         gabarito = df.loc[idx_gab]
         alunos_df = df.drop(index=idx_gab).copy()
 
-        if modalidade_filtro != 'Geral':
+        # Filtro por modalidade
+        if modalidade_filtro != 'Geral' and COL_MODALIDADE in alunos_df.columns:
             alunos_df = alunos_df[alunos_df[COL_MODALIDADE].astype(str).str.lower() == modalidade_filtro.lower()]
 
+        # Filtro por "Tipo de aluno"
+        REMAN_COL = next((c for c in REMAN_COL_CANDIDATES if c in df.columns), None)
+        has_reman_col = REMAN_COL is not None
+
+        if has_reman_col:
+            reman_norm = alunos_df[REMAN_COL].astype(str).str.strip().str.lower()
+            if tipo_aluno == 'Remanescente':
+                alunos_df = alunos_df[reman_norm == 'sim']
+            elif tipo_aluno in ('Não remanescente', 'Nao remanescente', 'Não Remanescente'):
+                alunos_df = alunos_df[~(reman_norm == 'sim')]
+
         if alunos_df.empty:
-            return f'Nenhum aluno encontrado para a modalidade "{modalidade_filtro}".'
+            msg_mod = f' e modalidade "{modalidade_filtro}"' if modalidade_filtro != 'Geral' else ''
+            msg_tipo = f' e tipo "{tipo_aluno}"' if tipo_aluno != 'Todos' else ''
+            return f'Nenhum aluno encontrado{msg_mod}{msg_tipo}.'
 
         quest_cols = [c for c in df.columns if c not in COLS_EXCLUIR]
 
@@ -563,6 +625,8 @@ def dashboard():
             'perc': [round(100 * a / max(1, len(alunos_df)), 2) for a in acertos_por_questao]
         }).sort_values('perc', ascending=False)
 
+        tipo_aluno_opcoes = ['Todos', 'Remanescente', 'Não remanescente']
+
         return render_template(
             'dashboard.html',
             arquivo=nome_arquivo,
@@ -577,7 +641,16 @@ def dashboard():
             mediana_nota=mediana_nota,
             top3_por_questao=top3_por_questao,
             dificuldade=dificuldade.to_dict(orient='records'),
-            modalidade_filtro=modalidade_filtro
+            modalidade_filtro=modalidade_filtro,
+
+            # filtros novos
+            has_reman_col=(REMAN_COL is not None),
+            tipo_aluno=tipo_aluno,
+            tipo_aluno_opcoes=tipo_aluno_opcoes,
+            reman_col_name=REMAN_COL if REMAN_COL else None,
+
+            # nome real da coluna de e-mail detectada (se quiser usar no template)
+            email_col_name=COL_EMAIL
         )
 
     except Exception as e:
