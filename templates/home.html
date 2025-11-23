@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload de Arquivo Excel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonte opcional -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --sidebar-w: 260px; }
+    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans' }
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+
+    /* Dropzone visual */
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 0.75rem;
+      transition: background .15s ease, border-color .15s ease;
+      cursor: pointer;
+    }
+    .dropzone.dragover { background: #f8fafc; border-color: #3b82f6; }
+
+    /* Estado ativo do link na NAV (usado no partial) */
+    .nav-link-active { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+
+  {# === NAVBAR UNIFICADA (nova) === #}
+  {% include 'partials/navbar.html' %}
+
+  <!-- Conteúdo principal -->
+  <main class="mx-auto max-w-3xl md:max-w-4xl px-6">
+    <h1 class="pt-8 text-2xl font-semibold tracking-tight">Envie um arquivo Excel (.xlsx)</h1>
+
+    <section class="mt-6">
+      <form method="POST" action="/upload" enctype="multipart/form-data" class="space-y-6" id="uploadForm" autocomplete="off">
+        <!-- Dropzone -->
+        <div id="dropzone" role="button" tabindex="0" aria-label="Selecione um arquivo .xlsx (Excel)"
+             class="dropzone bg-white p-6 flex flex-col items-center justify-center text-center select-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19.35 10.04A7.49 7.49 0 005.5 8.5a5.5 5.5 0 00-1.1 10.89H19a4 4 0 00.35-7.95zM11 14v4h2v-4h3l-4-4-4 4h3z"/>
+          </svg>
+          <p class="mt-3 text-sm text-slate-600">
+            Arraste e solte o arquivo aqui, ou
+            <label for="fileInput" class="text-blue-600 font-medium cursor-pointer hover:underline">clique para selecionar</label>.
+          </p>
+          <p class="mt-1 text-xs text-slate-500">Apenas <strong>.xlsx</strong> (Excel). Tamanho máx.: 50&nbsp;MB.</p>
+
+          <input id="fileInput" type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" required>
+          <div id="fileInfo" aria-live="polite" class="mt-3 text-sm text-slate-700 hidden"></div>
+        </div>
+
+        <!-- Ações -->
+        <div class="flex items-center justify-end gap-3">
+          <a href="/" class="focus-ring inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+            Cancelar
+          </a>
+          <button id="btnSubmit" type="submit"
+                  class="focus-ring inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[.99]">
+            <span class="btn-text">Enviar</span>
+            <svg class="btn-spin hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <!-- Dicas -->
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-sm font-semibold text-slate-900">Requisitos</h3>
+          <ul class="mt-2 list-disc pl-5 text-sm text-slate-600 space-y-1">
+            <li>Formato Excel: <code class="px-1 rounded bg-slate-100">.xlsx</code>.</li>
+            <li>Evite nomes com espaços ou caracteres especiais.</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-sm font-semibold text-slate-900">Dicas</h3>
+          <ul class="mt-2 list-disc pl-5 text-sm text-slate-600 space-y-1">
+            <li>Verifique se a planilha possui abas esperadas (ex.: <em>Base</em>, <em>Gabarito</em>).</li>
+            <li>Padronize tipos de dados nas colunas.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mx-auto mt-12 max-w-3xl md:max-w-4xl px-6 pb-10 text-center text-xs text-slate-400">
+    © <span id="year"></span> Simulados — Todos os direitos reservados.
+  </footer>
+
+  <script>
+    // Ano
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Evita navegação ao soltar arquivo fora da dropzone
+    ['dragover','drop'].forEach(evt => window.addEventListener(evt, e => e.preventDefault()));
+
+    // Upload: drag & drop + validação
+    const dropzone   = document.getElementById('dropzone');
+    const fileInput  = document.getElementById('fileInput');
+    const fileInfo   = document.getElementById('fileInfo');
+    const uploadForm = document.getElementById('uploadForm');
+    const btnSubmit  = document.getElementById('btnSubmit');
+    const MAX_MB = 50;
+
+    const resetInfo = () => {
+      fileInput.value = '';
+      fileInfo.classList.add('hidden');
+      fileInfo.textContent = '';
+    };
+
+    const setFile = (file) => {
+      if (!file) return;
+      const okExt = /\.xlsx$/i.test(file.name);
+      if (!okExt) {
+        alert('Selecione um arquivo com extensão .xlsx.');
+        return resetInfo();
+      }
+      if (file.size > MAX_MB * 1024 * 1024) {
+        alert(`Arquivo acima de ${MAX_MB} MB.`);
+        return resetInfo();
+      }
+
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+
+      fileInfo.textContent = `Selecionado: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+      fileInfo.classList.remove('hidden');
+    };
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+    fileInput.addEventListener('change', (e) => setFile(e.target.files?.[0]));
+
+    ['dragenter','dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave','drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      setFile(file);
+    });
+
+    // Validação + feedback visual no submit
+    uploadForm.addEventListener('submit', (e) => {
+      const f = fileInput.files?.[0];
+      if (!f || !/\.xlsx$/i.test(f.name) || f.size > MAX_MB * 1024 * 1024) {
+        e.preventDefault();
+        alert('Selecione um .xlsx válido (até 50 MB) antes de enviar.');
+        return;
+      }
+      btnSubmit.disabled = true;
+      btnSubmit.classList.add('opacity-75','cursor-not-allowed');
+      btnSubmit.querySelector('.btn-text').textContent = 'Enviando...';
+      btnSubmit.querySelector('.btn-spin').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

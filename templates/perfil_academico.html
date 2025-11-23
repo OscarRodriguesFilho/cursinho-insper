@@ -38,15 +38,12 @@
     /* Link ativo da nav */
     .nav-link-active { background: #f1f5f9; color: #0f172a; font-weight: 600; }
 
-    /* Ícones sociais coloridos */
-    .ig { color:#E1306C; }       /* Instagram */
-    .li { color:#0A66C2; }       /* LinkedIn */
-    .tk { color:#111827; }       /* TikTok (preto) */
+    /* Ícones sociais */
+    .ig { color:#E1306C; }
+    .li { color:#0A66C2; }
+    .tk { color:#111827; }
 
-    /* Borda preta para o ícone do site */
     .site-badge { border:2px solid #111827; }
-
-    /* ====== LAYOUT DA PÁGINA DE PERFIL ====== */
 
     :root {
       --bg-page: #f5f7fb;
@@ -64,7 +61,6 @@
     }
 
     main {
-      /* espaço extra pro botão flutuante ficar bonito */
       padding-top: 2.5rem;
       padding-bottom: 3rem;
     }
@@ -109,8 +105,6 @@
       box-shadow: 0 4px 10px rgba(148, 163, 184, 0.15);
       white-space: nowrap;
     }
-
-    /* ======== CARD DE FILTROS / RESUMO ======== */
 
     .filters-card {
       background: var(--bg-card);
@@ -194,8 +188,6 @@
       border: 1px solid #bfdbfe;
     }
 
-    /* ======== KPIs ======== */
-
     .kpis-row {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -231,8 +223,6 @@
       font-size: .8rem;
       color: var(--text-soft);
     }
-
-    /* ======== GRIDS DE CARDS ======== */
 
     .grid-2 {
       display: grid;
@@ -292,8 +282,6 @@
       margin-bottom: .7rem;
     }
 
-    /* ===== Gráficos responsivos redondinhos ===== */
-
     .chart-shell {
       position: relative;
       width: 100%;
@@ -314,8 +302,6 @@
       color: var(--text-soft);
       padding: .3rem 0 .1rem;
     }
-
-    /* ======== INSIGHTS ======== */
 
     .insights-list {
       display: flex;
@@ -410,14 +396,11 @@
 
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
 
-{# ===== NOVA NAVBAR INJETADA AQUI ===== #}
 <style>
   :root{ --sidebar-w: 260px; }
-
   .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
   .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
 
-  /* Sidebar overlay */
   .sidebar {
     width: var(--sidebar-w);
     transform: translateX(-100%);
@@ -454,7 +437,6 @@
     pointer-events: none;
   }
 
-  /* Estado ativo da nav */
   .nav-link-active {
     background: #f1f5f9;
     color: #0f172a;
@@ -462,7 +444,6 @@
   }
 </style>
 
-<!-- Botão flutuante de abrir menu -->
 <button id="btnOpen"
         class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
         aria-label="Abrir menu">
@@ -471,10 +452,8 @@
   </svg>
 </button>
 
-<!-- Overlay -->
 <div class="overlay"></div>
 
-<!-- Sidebar (NAV UNIFICADA) -->
 <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
   <div class="h-full flex flex-col">
     <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
@@ -494,7 +473,6 @@
 
     <nav class="flex-1 overflow-y-auto px-2 py-3">
       <ul class="space-y-1">
-        <!-- GERAL -->
         <li class="px-2 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Geral</li>
         <li>
           <a href="/" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
@@ -505,7 +483,6 @@
           </a>
         </li>
         <li>
-          <!-- AQUI eu já coloco o link real para /perfil_academico -->
           <a href="/perfil_academico"
              class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
             <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -514,8 +491,6 @@
             <span>Perfil dos alunos</span>
           </a>
         </li>
-
-        <!-- NOVO ITEM: Ex-alunos -->
         <li>
           <a href="/ex_alunos"
              class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
@@ -526,7 +501,6 @@
           </a>
         </li>
 
-        <!-- PROVA -->
         <li class="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Prova</li>
         <li>
           <a href="/conferir_gabarito" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
@@ -553,7 +527,6 @@
           </a>
         </li>
 
-        <!-- MARKETING -->
         <li class="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Marketing</li>
         <li>
           <a href="/dashboard_marketing" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
@@ -566,31 +539,26 @@
       </ul>
     </nav>
 
-    <!-- Rodapé da sidebar: redes + logout -->
     <div class="mt-auto border-t border-slate-200 px-2 py-3">
       <div class="flex items-center justify-between px-1 pb-3">
-        <!-- Site oficial -->
-        <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black bg-white hover:bg-slate-50 shadow-sm transition"
+        <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black bg-white hover:bg-slate-50 shadow-sm transition site-badge"
            href="https://cursinhoinsper.org/?utm_source=instagram&amp;utm_medium=post&amp;utm_campaign=voluntarios_alunos&amp;utm_id=0"
            target="_blank" rel="noopener noreferrer" title="Site oficial" aria-label="Site oficial">
           <img src="https://cursinhoinsper.org/assets/images/apple-touch-icon.png?v=072e23cf"
                alt="Cursinho Insper" class="h-5 w-5 object-contain" />
         </a>
-        <!-- Instagram -->
         <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 via-fuchsia-500 to-yellow-400 hover:opacity-90 shadow-sm transition"
            href="https://www.instagram.com/cursinho.insper/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm5 4a5 5 0 100 10 5 5 0 000-10zm6.5.75a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM12 9a3 3 0 110 6 3 3 0 010-6z"/>
           </svg>
         </a>
-        <!-- TikTok -->
         <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-black hover:bg-neutral-800 shadow-sm transition"
            href="https://www.tiktok.com/@cursinho.insper" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="white" aria-hidden="true">
             <path d="M168.2 32c8.4 17.7 24.5 31.3 43.8 35.6v35.1c-16.1-.7-31.4-6-44.5-15.1v60.6c0 38.9-31.6 70.5-70.5 70.5S26.5 186.1 26.5 147.2 58.1 76.7 97 76.7c7.2 0 14.2 1.1 20.7 3.2v36.5a35.6 35.6 0 00-20.7-6.5c-20.1 0-36.4 16.3-36.4 36.4s16.3 36.4 36.4 36.4 36.4-16.3 36.4-36.4V32h35.8z"/>
           </svg>
         </a>
-        <!-- LinkedIn -->
         <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A66C2] hover:bg-[#0857A6] shadow-sm transition"
            href="https://www.linkedin.com/company/78313776/admin/dashboard/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -609,11 +577,9 @@
   </div>
 </aside>
 
-<!-- ===== Conteúdo principal ===== -->
 <main class="mx-auto max-w-6xl md:max-w-6xl px-6">
   <div class="page">
 
-    <!-- CABEÇALHO -->
     <div class="page-header">
       <div class="page-title-block">
         <h1>Análise de perfil acadêmico</h1>
@@ -625,7 +591,6 @@
       </div>
     </div>
 
-    <!-- FILTROS / RESUMO -->
     <section class="filters-card">
       <div class="filters-row">
         <div class="filter-group">
@@ -684,7 +649,6 @@
       </div>
     </section>
 
-    <!-- KPIs -->
     <section class="kpis-row">
       <div class="kpi-card">
         <div class="kpi-label">Respondentes</div>
@@ -708,7 +672,6 @@
       </div>
     </section>
 
-    <!-- GRID 1 -->
     <section class="grid-2">
       <div class="card">
         <div class="card-header">
@@ -741,7 +704,6 @@
       </div>
     </section>
 
-    <!-- GRID 2: áreas & rotina -->
     <section class="grid-2-equal">
       <div class="card">
         <div class="card-header">
@@ -770,8 +732,6 @@
       </div>
     </section>
 
-
-    <!-- GRID 3: complementares / simulados / dispositivo -->
     <section class="grid-3">
       <div class="card">
         <div class="card-header">
@@ -811,7 +771,6 @@
       </div>
     </section>
 
-    <!-- GRID 3: condições, socio, material -->
     <section class="grid-3">
       <div class="card">
         <div class="card-header">
@@ -851,17 +810,13 @@
       </div>
     </section>
 
-    <!-- GRID 3: dúvidas + insights -->
     <section class="grid-3">
-    
       <div class="card">
         <div class="card-header">
           <div class="card-title">Resumo de perfil & desempenho</div>
           <span class="card-tag">Insights automáticos</span>
         </div>
-        <div class="insights-list" id="insights-container">
-          <!-- preenchido via JS -->
-        </div>
+        <div class="insights-list" id="insights-container"></div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -893,12 +848,9 @@
   </div>
 </main>
 
-<!-- ====== JS: NAV + PERFIL ====== -->
 <script>
-  // Ano no rodapé
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // ========= HIDRATAR FILTROS A PARTIR DA URL =========
   (function hydrateFiltersFromQuery(){
     const params = new URLSearchParams(window.location.search);
     const map = [
@@ -918,7 +870,6 @@
     });
   })();
 
-  // Aplicar filtros: recarrega a página com query string
   document.getElementById('btnApplyFilters').addEventListener('click', function(){
     const situacao = document.getElementById('f-situacao').value;
     const tipoEscola = document.getElementById('f-tipo-escola').value;
@@ -928,7 +879,6 @@
 
     const params = new URLSearchParams(window.location.search);
 
-    // Só mantém na URL o que não for "todos"
     if (situacao === 'todos') params.delete('situacao'); else params.set('situacao', situacao);
     if (tipoEscola === 'todos') params.delete('tipo_escola'); else params.set('tipo_escola', tipoEscola);
     if (turno === 'todos') params.delete('turno'); else params.set('turno', turno);
@@ -940,9 +890,6 @@
     window.location.href = newUrl;
   });
 
-  // ========= DADOS VINDOS DO FLASK =========
-  // IMPORTANTE: no Python você deve fazer algo como:
-  // return render_template("perfil_academico.html", perfil_data=perfil_data)
   window.perfilData = {{ perfil_data | tojson }};
 
   const perfilData = window.perfilData || {
@@ -969,7 +916,6 @@
     medias_resumo: { sono: null, estudo: null },
   };
 
-  // ========= HELPERS =========
   function toNumber(v, defVal = 0) {
     const n = Number(v);
     return isFinite(n) ? n : defVal;
@@ -1068,14 +1014,12 @@
     }
   };
 
-  // ========= KPIs & chips =========
   (function setupKPIs() {
     const total = perfilData.total_respostas || 0;
     document.getElementById("kpi-respondentes").textContent = total || "–";
     document.getElementById("chip-respondentes").textContent =
       `Respondentes: ${total || "–"}`;
 
-    // ensino médio x egresso
     const emLabels = perfilData.ensino_medio.labels || [];
     const emCounts = perfilData.ensino_medio.counts || [];
     let ativos = 0, egressos = 0;
@@ -1101,7 +1045,6 @@
     document.getElementById("chip-estudo").textContent =
       `Estudo extra: ${fmtHours(perfilData.medias_resumo?.estudo)}`;
 
-    // autoavaliação: dentro/acima do esperado
     const dLabels = perfilData.desempenho_geral.labels || [];
     const dCounts = perfilData.desempenho_geral.counts || [];
     let ok = 0, tot = 0;
@@ -1122,26 +1065,23 @@
       "declaram desempenho dentro ou acima do esperado";
   })();
 
-  /* ========= Gráficos ========= */
-
-  // Situação escolar / turno
   (function chartEnsinoTurno() {
+    // Paleta neutra (sem verde/vermelho/amarelo)
     createDoughnutChart(
       "chartEnsino",
       perfilData.ensino_medio.labels || [],
       perfilData.ensino_medio.counts || [],
-      ["#60a5fa", "#f97373", "#22c55e", "#a855f7", "#facc15"]
+      ["#60a5fa", "#6366f1", "#a855f7", "#0ea5e9", "#64748b"]
     );
 
     createDoughnutChart(
       "chartTurno",
       perfilData.turno.labels || [],
       perfilData.turno.counts || [],
-      ["#22c55e", "#3b82f6", "#a855f7", "#f97373"]
+      ["#1d4ed8", "#6366f1", "#a855f7", "#0ea5e9"]
     );
   })();
 
-  // Percepção de desempenho
   (function chartDesempenho() {
     const canvas = document.getElementById("chartDesempenho");
     if (!canvas) return;
@@ -1187,7 +1127,6 @@
     });
   })();
 
-  // Radar de áreas
   (function chartAreas() {
     const canvas = document.getElementById("chartAreas");
     if (!canvas) return;
@@ -1243,7 +1182,6 @@
     });
   })();
 
-  // Rotina (barras horizontais)
   (function chartRotina() {
     const canvas = document.getElementById("chartRotina");
     if (!canvas) return;
@@ -1322,7 +1260,6 @@
     });
   })();
 
-  // Evolução dos simulados
   (function chartEvolucao() {
     const canvas = document.getElementById("chartEvolucao");
     if (!canvas) return;
@@ -1367,25 +1304,37 @@
     });
   })();
 
-  // Complementares / simulados / dispositivo / participação / interação / material / condicoes / socio
-  (function otherDoughnuts() {
-    // Complementares
-    createDoughnutChart(
-      "chartComplementares",
-      perfilData.complementares.labels || [],
-      perfilData.complementares.counts || [],
-      ["#3b82f6", "#a855f7", "#22c55e", "#f97373"]
-    );
+  (function otherCharts() {
+    // Atividades complementares - cores por resposta
+    (function chartComplementares() {
+      const labels = perfilData.complementares.labels || [];
+      const counts = perfilData.complementares.counts || [];
+      const colors = labels.map(l => {
+        const t = String(l || "").toLowerCase();
+        if (t.includes("sim, de vez em quando")) return "#facc15";   // amarelo
+        if (t.startsWith("sim")) return "#22c55e";                   // verde
+        if (t.startsWith("não") || t.startsWith("nao")) return "#f97373"; // vermelho
+        return "#3b82f6";                                            // neutro azul
+      });
+      createDoughnutChart("chartComplementares", labels, counts, colors);
+    })();
 
-    // Simulados
-    createDoughnutChart(
-      "chartSimulados",
-      perfilData.simulados.labels || [],
-      perfilData.simulados.counts || [],
-      ["#22c55e", "#f97373", "#fbbf24"]
-    );
+    // Participação nos simulados - cores por resposta
+    (function chartSimulados() {
+      const labels = perfilData.simulados.labels || [];
+      const counts = perfilData.simulados.counts || [];
+      const colors = labels.map(l => {
+        const t = String(l || "").toLowerCase();
+        if (t.includes("sim, frequentemente")) return "#22c55e"; // verde
+        if (t.includes("sim, de vez em quando")) return "#fde68a"; // amarelo claro
+        if (t.includes("pouco")) return "#fbbf24"; // amarelo escuro
+        if (t.includes("quase nada")) return "#f97373"; // vermelho
+        return "#60a5fa"; // neutro azul
+      });
+      createDoughnutChart("chartSimulados", labels, counts, colors);
+    })();
 
-    // Dispositivo (usei barras em vez de donut para variar)
+    // Dispositivo
     (function chartDispositivo() {
       const canvas = document.getElementById("chartDispositivo");
       if (!canvas) return;
@@ -1454,15 +1403,24 @@
       ["#f97373", "#34d399", "#fbbf24", "#6366f1"]
     );
 
-    // Socioemocional
-    createDoughnutChart(
-      "chartSocio",
-      perfilData.socioemocional.labels || [],
-      perfilData.socioemocional.counts || [],
-      ["#34d399", "#f97373", "#fbbf24"]
-    );
+    // Apoio socioemocional - cores por resposta (Sim/Não)
+    (function chartSocio() {
+      const labels = perfilData.socioemocional.labels || [];
+      const counts = perfilData.socioemocional.counts || [];
+      const colors = labels.map(l => {
+        const t = String(l || "").toLowerCase();
+        // Sim / utiliza
+        if (t.startsWith("sim") || (t.includes("utiliza") && !t.includes("não") && !t.includes("nao")))
+          return "#22c55e"; // verde
+        // Não / não utiliza
+        if (t.startsWith("não") || t.startsWith("nao") || t.includes("não utiliza") || t.includes("nao utiliza"))
+          return "#f97373"; // vermelho
+        return "#94a3b8"; // cinza neutro
+      });
+      createDoughnutChart("chartSocio", labels, counts, colors);
+    })();
 
-    // Material físico (recebeu + impacto numa mesma pizza, se você preferir pode juntar no Python)
+    // Material físico
     (function chartMaterial() {
       const canvas = document.getElementById("chartMaterial");
       if (!canvas) return;
@@ -1482,22 +1440,20 @@
       }
 
       const colors = [
-        "#22c55e", "#f97373", // recebeu / não recebeu
-        "#4ade80", "#60a5fa", "#facc15", "#f97373" // impacto: ajudou muito, ajudou um pouco, não sentiu, atrapalhou etc.
+        "#22c55e", "#f97373",
+        "#4ade80", "#60a5fa", "#facc15", "#f97373"
       ];
 
       createDoughnutChart("chartMaterial", labels, counts, colors);
     })();
   })();
 
-  /* ========= Insights simples: perfil x desempenho ========= */
   (function buildInsights() {
     const box = document.getElementById("insights-container");
     if (!box) return;
 
     const insights = [];
 
-    // Autoavaliação geral
     const dLabels = perfilData.desempenho_geral.labels || [];
     const dCounts = perfilData.desempenho_geral.counts || [];
     let abaixo = 0, dentroOuAcima = 0, tot = 0;
@@ -1524,7 +1480,6 @@
       });
     }
 
-    // Sono
     const sLabels = perfilData.sono.labels || [];
     const sCounts = perfilData.sono.counts || [];
     let sono7 = 0, sonoTot = 0;
@@ -1545,7 +1500,6 @@
       });
     }
 
-    // Estudo extra
     const eLabels = perfilData.estudo.labels || [];
     const eCounts = perfilData.estudo.counts || [];
     let est2 = 0, estTot = 0;
@@ -1566,7 +1520,6 @@
       });
     }
 
-    // Condições de aprendizagem
     const condLabels = perfilData.condicoes.labels || [];
     const condCounts = perfilData.condicoes.counts || [];
     let condSim = 0, condTot = 0;
@@ -1589,7 +1542,6 @@
       });
     }
 
-    // Evolução dos simulados (melhorou x piorou)
     const evLabels = perfilData.evolucao?.labels || [];
     const evCounts = perfilData.evolucao?.counts || [];
     let melhorou = 0, piorou = 0, estavel = 0, totEv = 0;
@@ -1645,10 +1597,7 @@
       box.appendChild(item);
     });
   })();
-</script>
 
-<!-- SCRIPT DA NOVA NAVBAR (mantido do partial) -->
-<script>
   const body = document.body;
   const btnOpen = document.getElementById('btnOpen');
   const btnClose = document.getElementById('btnClose');
@@ -1662,7 +1611,6 @@
   overlay?.addEventListener('click', closeSidebar);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
-  // Marca item ativo na nav
   (function markActive(){
     const path = location.pathname.replace(/\/+$/, '') || '/';
     document.querySelectorAll('.nav-link').forEach(a => {
@@ -1675,8 +1623,6 @@
     });
   })();
 
-  // ======= ESSA PARTE AQUI É QUE QUEBRAVA TUDO =========
-  // Só faz a validação de .xlsx se o form existir na página
   const select = document.getElementById('arquivo');
   const form   = document.getElementById('form-dashboard');
 
