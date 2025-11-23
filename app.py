@@ -27,6 +27,10 @@ GABARITO_FILENAME = 'resultado_corrigido.xlsx'
 # Pasta de marketing (nova)
 MARKETING_UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads_marketing')
 
+# Pasta dos arquivos de formulário acadêmico
+ARQUIVOS_FOLDER = os.path.join(BASE_DIR, 'arquivos')
+os.makedirs(ARQUIVOS_FOLDER, exist_ok=True)
+
 # Parâmetros do detector (baseado no seu script)
 DETECT_CFG = {
     "IMG_CANDIDATES": ("image.png", "image.jpg", "image.jpeg", "image.webp"),
@@ -64,12 +68,15 @@ if not AUTH_PASSWORD_HASH:
     # Fallback seguro em memória: gera hash a partir da senha plana fornecida
     AUTH_PASSWORD_HASH = generate_password_hash(AUTH_PASSWORD_PLAIN)
 
+
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # ---------------------- Auth helpers ----------------------
 def _is_api_request():
     return request.path.startswith("/api/") or "application/json" in (request.headers.get("Accept", "")).lower()
+
 
 def login_required(fn):
     from functools import wraps
@@ -83,6 +90,7 @@ def login_required(fn):
         return redirect(url_for("login", next=nxt))
     return wrapper
 
+
 # ===================== Normalização / Colunas =====================
 
 def _norm_text(s: str) -> str:
@@ -93,6 +101,7 @@ def _norm_text(s: str) -> str:
     s = re.sub(r'[\u2010-\u2015\u2212\u2043\uFE63\uFF0D]', '-', s)   # normaliza hífens para '-'
     s = re.sub(r'\s+', ' ', s)                                      # colapsa espaços
     return s
+
 
 def find_email_column(columns) -> str | None:
     """Tenta achar a coluna de e-mail usando normalização e keywords."""
@@ -118,6 +127,7 @@ def find_email_column(columns) -> str | None:
             return col
 
     return None
+
 
 # ===================== Rotas de Autenticação =====================
 
@@ -145,12 +155,14 @@ def login():
 
     return render_template("login.html")
 
+
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.clear()
     if _is_api_request():
         return jsonify({"ok": True})
     return redirect(url_for("login"))
+
 
 # ===================== Rotas utilitárias =====================
 
@@ -159,15 +171,18 @@ def logout():
 def serve_upload(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+
 @app.route('/uploads_marketing/<path:filename>')
 @login_required
 def serve_upload_marketing(filename):
     return send_from_directory(MARKETING_UPLOAD_FOLDER, filename)
 
+
 @app.route('/root/<path:filename>')
 @login_required
 def serve_root(filename):
     return send_from_directory(BASE_DIR, filename)
+
 
 @app.route('/debug/uploads')
 @login_required
@@ -175,12 +190,14 @@ def debug_uploads():
     files = sorted(os.listdir(app.config['UPLOAD_FOLDER']))
     return jsonify({"UPLOAD_FOLDER": app.config['UPLOAD_FOLDER'], "files": files})
 
+
 # ===================== Fluxo principal (upload/correção) =====================
 
 @app.route('/')
 @login_required
 def index():
     return render_template('upload.html')
+
 
 @app.route('/upload', methods=['POST'])
 @login_required
@@ -229,6 +246,7 @@ def upload_file():
 
     return '❌ Tipo de arquivo não permitido. Envie um .xlsx.', 400
 
+
 @app.route('/gabarito')
 @login_required
 def ver_gabarito():
@@ -241,6 +259,7 @@ def ver_gabarito():
         return render_template('gabarito.html', gabarito=gabarito)
     except Exception as e:
         return f"Erro ao tentar carregar o gabarito: {e}"
+
 
 # ===================== Conferência de gabarito (bolinhas) =====================
 
@@ -263,6 +282,7 @@ def _find_image_path():
             return p, url_for('serve_root', filename=f), f
     return None, None, None
 
+
 @app.route('/conferir_gabarito', methods=['GET'])
 @login_required
 def conferir_gabarito():
@@ -270,6 +290,7 @@ def conferir_gabarito():
     return render_template('conferir_gabarito_bolhas.html',
                            imagem_url=imagem_url,
                            imagem_nome=imagem_nome)
+
 
 @app.route('/api/bubbles', methods=['GET', 'POST'])
 @login_required
@@ -298,7 +319,8 @@ def api_bubbles():
         for c in payload['circles']:
             try:
                 x = float(c.get('x', 0)); y = float(c.get('y', 0)); r = float(c.get('r', 0))
-                if r > 0: circles.append({"x": x, "y": y, "r": r})
+                if r > 0:
+                    circles.append({"x": x, "y": y, "r": r})
             except Exception:
                 continue
 
@@ -312,6 +334,7 @@ def api_bubbles():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
 # ---- Detecção de bolinhas (robusta) ----
 RESIZE_W      = 1800
 HOUGH_PARAM1  = 120
@@ -323,11 +346,13 @@ DARK_DROP_MIN = 35
 INNER_MAX     = 140
 FILL_RATIO_MIN= 0.55
 
+
 def _resize_keep(img, target_w):
     h, w = img.shape[:2]
     s = target_w / float(w)
     out = cv2.resize(img, (int(w*s), int(h*s)), cv2.INTER_CUBIC)
     return out, s
+
 
 def _hough(gray):
     g = cv2.GaussianBlur(gray, (5,5), 0)
@@ -339,6 +364,7 @@ def _hough(gray):
     if cs is None:
         return np.empty((0,3), dtype=np.float32)
     return cs[0].astype(np.float32)
+
 
 def _circle_measures(gray, x, y, r):
     H, W = gray.shape[:2]
@@ -363,11 +389,14 @@ def _circle_measures(gray, x, y, r):
 
     return inner_mean, ring_mean, drop, fill_ratio
 
+
 def _is_filled(inner_mean, drop, fill_ratio):
     return (drop >= DARK_DROP_MIN) and (inner_mean <= INNER_MAX) and (fill_ratio >= FILL_RATIO_MIN)
 
+
 def _nms_nearby(circles, thr=0.8):
-    if not circles: return circles
+    if not circles:
+        return circles
     circles = sorted(circles, key=lambda c: c["r"], reverse=True)
     kept = []
     for c in circles:
@@ -376,8 +405,10 @@ def _nms_nearby(circles, thr=0.8):
             dx = c["x"]-k["x"]; dy = c["y"]-k["y"]
             if (dx*dx + dy*dy)**0.5 <= thr*max(c["r"], k["r"]):
                 ok = False; break
-        if ok: kept.append(c)
+        if ok:
+            kept.append(c)
     return kept
+
 
 def detect_bubbles_opencv(image_path: Path):
     img = cv2.imread(str(image_path))
@@ -398,7 +429,8 @@ def detect_bubbles_opencv(image_path: Path):
     for (x, y, r) in det:
         y_abs = y + y0
         m = _circle_measures(gray, int(round(x)), int(round(y_abs)), int(round(r)))
-        if m is None: continue
+        if m is None:
+            continue
         inner, ring, drop, fill_ratio = m
         if _is_filled(inner, drop, fill_ratio):
             results.append({
@@ -411,6 +443,7 @@ def detect_bubbles_opencv(image_path: Path):
 
     results = _nms_nearby(results, thr=0.8)
     return results
+
 
 @app.post("/api/detect_bubbles")
 @login_required
@@ -435,6 +468,7 @@ def api_detect_bubbles():
         return {"ok": True, "count": len(circles), "circles": out["circles"]}
     except Exception as e:
         return {"ok": False, "error": str(e)}, 500
+
 
 # ===================== Respostas por aluno =====================
 
@@ -480,6 +514,7 @@ def verificar_respostas():
 
     except Exception as e:
         return f'Erro ao processar o arquivo: {e}'
+
 
 # ===================== Dashboard =====================
 
@@ -587,7 +622,7 @@ def dashboard():
         acertos_por_questao, top3_por_questao = [], []
         for c in quest_cols:
             col_series = alunos_df[c]
-            cont = Counter([str(v) for v in col_series.dropna().tolist() ])
+            cont = Counter([str(v) for v in col_series.dropna().tolist()])
             correto = str(gabarito.get(c))
             acertos = int(sum(1 for v in col_series if str(v) == correto))
             acertos_por_questao.append(acertos)
@@ -602,7 +637,8 @@ def dashboard():
         grupos, perc_por_area = [], []
         for (ini_q, fim_q, nome_area) in mapa_areas:
             ini = ini_q - 1; fim = min(fim_q, Q)
-            if ini >= fim: continue
+            if ini >= fim:
+                continue
             labels, valores = [], []
             soma_acertos = 0
             possivel = len(alunos_df) * (fim - ini)
@@ -656,10 +692,12 @@ def dashboard():
     except Exception as e:
         return f'Erro ao processar o dashboard: {e}'
 
+
 # ===================== Dashboard de Marketing =====================
 
 def allowed_file_marketing(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'xlsx', 'xls'}
+
 
 @app.route('/upload_marketing', methods=['GET'])
 @login_required
@@ -667,6 +705,7 @@ def upload_marketing_page():
     arquivos = [f for f in os.listdir(MARKETING_UPLOAD_FOLDER)
                 if f.lower().endswith(('.xlsx', '.xls'))]
     return render_template('upload_marketing.html', arquivos=arquivos)
+
 
 @app.route('/upload_marketing', methods=['POST'])
 @login_required
@@ -685,6 +724,7 @@ def upload_marketing_post():
 
     # Redireciona para o dashboard já focado no arquivo
     return redirect(url_for('dashboard_marketing', arquivo=filename))
+
 
 @app.route('/dashboard_marketing', methods=['GET', 'POST'])
 @login_required
@@ -723,18 +763,21 @@ def dashboard_marketing():
 
     num_cols = ['impressoes','views','curtidas','comentarios','compart','cliques_link','salvamentos','cliques_perfil','eficiencia','engajamento']
     for c in num_cols:
-        if c not in df.columns: df[c] = np.nan
+        if c not in df.columns:
+            df[c] = np.nan
         df[c] = (df[c].astype(str).str.replace('.', '', regex=False).str.replace(',', '.', regex=False))
         df[c] = pd.to_numeric(df[c], errors='coerce')
 
     for c in ['plataforma','tipo','tema','turbinado','publico','link','data']:
-        if c not in df.columns: df[c] = ''
+        if c not in df.columns:
+            df[c] = ''
 
     def make_label(row):
         d = pd.to_datetime(row.get('data'), errors='coerce')
         ds = d.strftime('%d/%m') if not pd.isna(d) else str(row.get('data') or '')
         tema = str(row.get('tema') or '')
-        if len(tema) > 24: tema = tema[:22] + '…'
+        if len(tema) > 24:
+            tema = tema[:22] + '…'
         return f"{ds} • {str(row.get('tipo') or '').lower()} • {tema}"
     df['label'] = df.apply(make_label, axis=1)
 
@@ -757,11 +800,16 @@ def dashboard_marketing():
     }
 
     fdf = df.copy()
-    if sel['plataforma']   != 'Todos': fdf = fdf[fdf['plataforma'].astype(str)==sel['plataforma']]
-    if sel['tipo_conteudo']!= 'Todos': fdf = fdf[fdf['tipo'].astype(str)==sel['tipo_conteudo']]
-    if sel['tema_post']    != 'Todos': fdf = fdf[fdf['tema'].astype(str)==sel['tema_post']]
-    if sel['turbinado']    != 'Todos': fdf = fdf[fdf['turbinado'].astype(str)==sel['turbinado']]
-    if sel['publico']      != 'Todos': fdf = fdf[fdf['publico'].astype(str)==sel['publico']]
+    if sel['plataforma']   != 'Todos':
+        fdf = fdf[fdf['plataforma'].astype(str)==sel['plataforma']]
+    if sel['tipo_conteudo']!= 'Todos':
+        fdf = fdf[fdf['tipo'].astype(str)==sel['tipo_conteudo']]
+    if sel['tema_post']    != 'Todos':
+        fdf = fdf[fdf['tema'].astype(str)==sel['tema_post']]
+    if sel['turbinado']    != 'Todos':
+        fdf = fdf[fdf['turbinado'].astype(str)==sel['turbinado']]
+    if sel['publico']      != 'Todos':
+        fdf = fdf[fdf['publico'].astype(str)==sel['publico']]
 
     metric_series = {
         'Visualizações': fdf['views'],
@@ -795,7 +843,8 @@ def dashboard_marketing():
         for v in vals:
             try:
                 fv = float(v)
-                if not np.isfinite(fv): fv = 0.0
+                if not np.isfinite(fv):
+                    fv = 0.0
             except Exception:
                 fv = 0.0
             out.append(fv)
@@ -840,6 +889,257 @@ def dashboard_marketing():
                            tabela=tabela,
                            ate_data=ate_data,
                            erro=None)
+
+
+# ===================== PERFIL ACADÊMICO =====================
+
+def _simple_counts(series):
+    """Retorna labels e counts limpos de uma Series categórica."""
+    s = series.dropna().astype(str).str.strip()
+    s = s[s != ""]
+    vc = s.value_counts()
+    return list(vc.index), [int(x) for x in vc.values]
+
+
+def _map_media(series, mapping):
+    """Converte categorias em número pela mapping e devolve média (ou None)."""
+    s = series.dropna().astype(str).str.strip()
+    nums = s.map(mapping)
+    nums = nums.dropna()
+    if nums.empty:
+        return None
+    return float(nums.mean())
+
+
+@app.route("/perfil_academico")
+@login_required
+def perfil_academico():
+    """
+    Lê o arquivo 'Formulário Perfil Acadêmico.xlsx' em arquivos/
+    e monta o dicionário perfil_data que o template 'perfil_academico.html'
+    espera para desenhar os gráficos.
+    """
+    excel_name = "Formulário Perfil Acadêmico.xlsx"
+    excel_path = os.path.join(ARQUIVOS_FOLDER, excel_name)
+
+    if not os.path.isfile(excel_path):
+        return f"Arquivo {excel_name} não encontrado na pasta 'arquivos/'.", 404
+
+    try:
+        df = pd.read_excel(excel_path)
+    except Exception as e:
+        return f"Erro ao ler o arquivo de perfil acadêmico: {e}", 500
+
+    # ==== Nomes de colunas usados ====
+    COL_ENSINO_MEDIO = 'Você está atualmente no ensino médio ou já se formou?'
+    COL_TURNO = 'Caso ainda esteja no ensino médio, em qual turno você estuda?'
+    COL_CONDICOES = 'Você tem alguma condição ou dificuldade de aprendizado que possamos considerar para melhor te acompanhar? '
+    COL_DESEMP_GERAL = 'Como você classificaria seu desempenho nos simulados do Cursinho? '
+    COL_EVOLUCAO = 'Qual sua evolução nos simulados ao longo do semestre? '
+    COL_AREA_MAT = 'Como você avalia seu desempenho nas seguintes áreas dos simulados?  [Matemática]'
+    COL_AREA_PORT = 'Como você avalia seu desempenho nas seguintes áreas dos simulados?  [Português]'
+    COL_AREA_CN = 'Como você avalia seu desempenho nas seguintes áreas dos simulados?  [Ciências da Natureza]'
+    COL_AREA_CH = 'Como você avalia seu desempenho nas seguintes áreas dos simulados?  [Ciências Humanas]'
+    COL_AREA_RED = 'Como você avalia seu desempenho nas seguintes áreas dos simulados?  [Redação]'
+    COL_COMPLEMENTARES = 'Você participou de atividades complementares do Cursinho (monitorias, plantões, eventos, etc.)? '
+    COL_SIMULADOS = 'Você participou dos simulados?'
+    COL_DISPOSITIVO = 'Em que dispositivo você faz os simulados?'
+    COL_ESTUDO = 'Quantas horas por dia você consegue estudar além das aulas da escola e/ou do cursinho?'
+    COL_SONO = 'Quantas horas de sono por dia você possui em média?'
+    COL_LAZER = 'Quanto tempo você dedica ao lazer por dia?'
+    COL_TRABALHO = 'Você trabalha e/ou ajuda nas tarefas domésticas em casa? Se sim, quanto tempo em média essas atividades levam por dia?'
+    COL_DESLOC = 'Quanto tempo você leva para chegar ao Insper para as aulas dos sábados letivos?'
+    COL_SOCIO = 'Você utiliza do programa de apoio socioemocional do Cursinho?'
+
+    total_respostas = int(len(df))
+
+    # ==== Situação escolar e turno ====
+    ensino_labels, ensino_counts = _simple_counts(df.get(COL_ENSINO_MEDIO, pd.Series(dtype=object)))
+    turno_labels, turno_counts = _simple_counts(df.get(COL_TURNO, pd.Series(dtype=object)))
+
+    # ==== Desempenho geral ====
+    desempen_labels, desempen_counts = _simple_counts(df.get(COL_DESEMP_GERAL, pd.Series(dtype=object)))
+
+    # ==== Desempenho por área (Likert 1–5) ====
+    rating_map = {
+        'muito ruim': 1,
+        'ruim': 2,
+        'razoável': 3,
+        'razoavel': 3,
+        'bom': 4,
+        'excelente': 5,
+    }
+
+    def area_media(col):
+        s = df.get(col, pd.Series(dtype=object)).dropna().astype(str).str.strip().str.lower()
+        s = s.replace({'razoavel': 'razoável'})  # normalização leve
+        nums = s.map(rating_map)
+        nums = nums.dropna()
+        if nums.empty:
+            return None
+        return float(nums.mean())
+
+    areas_labels = ["Matemática", "Português", "Ciências da Natureza", "Ciências Humanas", "Redação"]
+    areas_medias = [
+        area_media(COL_AREA_MAT),
+        area_media(COL_AREA_PORT),
+        area_media(COL_AREA_CN),
+        area_media(COL_AREA_CH),
+        area_media(COL_AREA_RED),
+    ]
+    # substitui None por 0 para o gráfico não quebrar
+    areas_medias = [0 if v is None else round(v, 2) for v in areas_medias]
+
+    # ==== Participação, complementares, dispositivo ====
+    simulados_labels, simulados_counts = _simple_counts(df.get(COL_SIMULADOS, pd.Series(dtype=object)))
+    compl_labels, compl_counts = _simple_counts(df.get(COL_COMPLEMENTARES, pd.Series(dtype=object)))
+    disp_labels, disp_counts = _simple_counts(df.get(COL_DISPOSITIVO, pd.Series(dtype=object)))
+
+    # ==== Condições / dificuldades ====
+    cond_series = df.get(COL_CONDICOES, pd.Series(dtype=object)).dropna().astype(str)
+
+    def classifica_cond(v: str) -> str:
+        t = v.strip().lower()
+        if not t:
+            return "Não informou"
+        # normalizações de "não" / "nenhum"
+        base_neg = ["não", "nao", "nenhum", "nenhuma", "não possuo", "nao possuo"]
+        if any(b in t for b in ["não sei", "nao sei"]):
+            return "Não sabe / não informou"
+        # se menciona explicitamente alguma condição
+        cond_palavras = ["ansied", "tdah", "depress", "autis", "dislex", "transtorno", "déficit", "deficit"]
+        if any(c in t for c in cond_palavras):
+            return "Relatou condição"
+        # caso só diga "não", "nenhum" etc.
+        if any(b in t for b in base_neg):
+            return "Não relatou"
+        # fallback: considera que relatou algo
+        return "Relatou condição"
+
+    cond_categ = cond_series.map(classifica_cond)
+    cond_labels, cond_counts = _simple_counts(cond_categ)
+
+    # ==== Apoio socioemocional ====
+    socio_labels, socio_counts = _simple_counts(df.get(COL_SOCIO, pd.Series(dtype=object)))
+
+    # ==== Hábitos (categorias + médias aproximadas em horas) ====
+    # mapas para converter categorias em horas aproximadas
+    estudo_map = {
+        'menos de 1h': 0.5,
+        '1 - 2 horas': 1.5,
+        '2 - 4 horas': 3.0,
+        'acima de 4 horas': 4.5,
+    }
+    sono_map = {
+        '4 a 6h': 5.0,
+        '7 a 8h': 7.5,
+        '8h+': 8.5,
+    }
+    lazer_map = {
+        '0 a 2h': 1.0,
+        '2 a 4h': 3.0,
+        '4 a 5h': 4.5,
+    }
+    trabalho_map = {
+        '0-1h': 0.5,
+        '1-3h': 2.0,
+        '3 -4h': 3.5,
+        '4 -6h': 5.0,
+        '6+h': 7.0,
+    }
+    desloc_map = {
+        'menos de 30 minutos': 0.3,
+        '30min - 1h': 0.75,
+        '1h30min - 2h': 1.75,
+        '2h ou mais': 2.5,
+    }
+
+    def map_media_general(series, mapping):
+        s = series.dropna().astype(str).str.strip().str.lower()
+        nums = s.map(mapping)
+        nums = nums.dropna()
+        if nums.empty:
+            return None
+        return float(nums.mean())
+
+    # distribuições categóricas
+    estudo_labels, estudo_counts = _simple_counts(df.get(COL_ESTUDO, pd.Series(dtype=object)))
+    sono_labels, sono_counts = _simple_counts(df.get(COL_SONO, pd.Series(dtype=object)))
+    lazer_labels, lazer_counts = _simple_counts(df.get(COL_LAZER, pd.Series(dtype=object)))
+    trab_labels, trab_counts = _simple_counts(df.get(COL_TRABALHO, pd.Series(dtype=object)))
+    desloc_labels, desloc_counts = _simple_counts(df.get(COL_DESLOC, pd.Series(dtype=object)))
+
+    media_estudo = map_media_general(df.get(COL_ESTUDO, pd.Series(dtype=object)), estudo_map)
+    media_sono = map_media_general(df.get(COL_SONO, pd.Series(dtype=object)), sono_map)
+
+    perfil_data = {
+        "total_respostas": total_respostas,
+
+        "ensino_medio": {
+            "labels": ensino_labels,
+            "counts": ensino_counts,
+        },
+        "turno": {
+            "labels": turno_labels,
+            "counts": turno_counts,
+        },
+        "desempenho_geral": {
+            "labels": desempen_labels,
+            "counts": desempen_counts,
+        },
+        "desempenho_areas": {
+            "labels": areas_labels,
+            "medias": areas_medias,
+        },
+        "simulados": {
+            "labels": simulados_labels,
+            "counts": simulados_counts,
+        },
+        "complementares": {
+            "labels": compl_labels,
+            "counts": compl_counts,
+        },
+        "dispositivo": {
+            "labels": disp_labels,
+            "counts": disp_counts,
+        },
+        "estudo": {
+            "labels": estudo_labels,
+            "counts": estudo_counts,
+        },
+        "sono": {
+            "labels": sono_labels,
+            "counts": sono_counts,
+        },
+        "lazer": {
+            "labels": lazer_labels,
+            "counts": lazer_counts,
+        },
+        "trabalho": {
+            "labels": trab_labels,
+            "counts": trab_counts,
+        },
+        "deslocamento": {
+            "labels": desloc_labels,
+            "counts": desloc_counts,
+        },
+        "condicoes": {
+            "labels": cond_labels,
+            "counts": cond_counts,
+        },
+        "socioemocional": {
+            "labels": socio_labels,
+            "counts": socio_counts,
+        },
+        "medias_resumo": {
+            "sono": media_sono,
+            "estudo": media_estudo,
+        },
+    }
+
+    # Renderiza o template que você criou
+    return render_template("perfil_academico.html", perfil_data=perfil_data)
+
 
 # =========================================================
 

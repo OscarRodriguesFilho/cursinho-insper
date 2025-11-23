@@ -9,83 +9,114 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
-    *{ font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial }
-    :root{ --line:#e5e7eb; --card:#fff; }
-    :root{ --sidebar-w:260px; }
-    .sidebar{ width:var(--sidebar-w); transform:translateX(-100%); transition:transform .25s ease; }
-    body.sidebar-open .sidebar{ transform:translateX(0); }
-    .overlay{ position:fixed; inset:0; background:rgba(15,23,42,.45); opacity:0; pointer-events:none; transition:opacity .2s ease; backdrop-filter:blur(2px); z-index:30; }
-    body.sidebar-open .overlay{ opacity:1; pointer-events:auto; }
-    .fab-open{ position:fixed; top:1rem; left:1rem; z-index:50; transition:opacity .2s ease; }
-    body.sidebar-open .fab-open{ opacity:0; pointer-events:none; }
+    *{
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    :root{
+      --line:#e5e7eb;
+      --card:#fff;
+    }
 
-    .canvas-wrap{ position:relative; display:inline-block; background:#fff; border:1px solid var(--line);
-                  border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.06); }
-    #sheet{ display:block; max-width:100%; height:auto; z-index:0; position:relative; }
-    #overlay{ position:absolute; inset:0; width:100%; height:100%; pointer-events:auto; z-index:1; }
-    .dot{ fill:rgba(255,0,0,.95); stroke:rgba(255,0,0,.95); stroke-width:2; pointer-events:auto; }
-    .dot.inactive{ fill:rgba(255,0,0,.12); stroke:rgba(255,0,0,.35); }
-    .crosshair{ cursor:crosshair; }
-    .kbd{ font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#f3f4f6; border:1px solid var(--line); padding:2px 6px; border-radius:6px; }
-    .q-input{ width:3rem; text-transform:uppercase; text-align:center; }
+    /* Foco e link ativo (mesmo padrão das outras telas) */
+    .focus-ring{
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+    }
+    .focus-ring:focus{
+      box-shadow: 0 0 0 4px rgba(59,130,246,.35);
+    }
+    .nav-link-active{
+      background:#f1f5f9;
+      color:#0f172a;
+      font-weight:600;
+    }
+
+    .canvas-wrap{
+      position:relative;
+      display:inline-block;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+    }
+    #sheet{
+      display:block;
+      max-width:100%;
+      height:auto;
+      z-index:0;
+      position:relative;
+    }
+    #overlay{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:auto;
+      z-index:1;
+    }
+    .dot{
+      fill:rgba(255,0,0,.95);
+      stroke:rgba(255,0,0,.95);
+      stroke-width:2;
+      pointer-events:auto;
+    }
+    .dot.inactive{
+      fill:rgba(255,0,0,.12);
+      stroke:rgba(255,0,0,.35);
+    }
+    .crosshair{
+      cursor:crosshair;
+    }
+    .kbd{
+      font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background:#f3f4f6;
+      border:1px solid var(--line);
+      padding:2px 6px;
+      border-radius:6px;
+    }
+    .q-input{
+      width:3rem;
+      text-transform:uppercase;
+      text-align:center;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
 
-  <!-- Botão flutuante p/ abrir menu -->
-  <button id="btnOpen" class="fab-open inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50" aria-label="Abrir menu">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-  </button>
-  <div class="overlay"></div>
-
-  <!-- Sidebar -->
-  <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
-    <div class="h-full flex flex-col">
-      <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
-        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
-        <div class="flex-1">
-          <div class="text-sm font-semibold leading-5">Simulados</div>
-          <div class="text-[11px] text-slate-500">Dashboard</div>
-        </div>
-        <button id="btnClose" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/></svg>
-        </button>
-      </div>
-
-      <nav class="flex-1 overflow-y-auto px-2 py-3">
-        <ul class="space-y-1">
-          <li><a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Início</span></a></li>
-          <li><a href="/gabarito" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg><span>Gabarito</span></a></li>
-          <li><a href="/dashboard" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg><span>Alunos</span></a></li>
-          <li><a href="/respostas" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100"><svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v12l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg><span>Respostas</span></a></li>
-        </ul>
-      </nav>
-
-      <div class="mt-auto border-t border-slate-200 px-2 py-3">
-        <a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-          <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg>
-          <span>Voltar ao início</span>
-        </a>
-      </div>
-    </div>
-  </aside>
+  {% include 'partials/navbar.html' %}
 
   <!-- CONTEÚDO -->
-  <main class="mx-auto max-w-6xl px-6 pt-8">
+  <main class="mx-auto max-w-6xl px-6 pt-20 md:pt-8">
     <h1 class="text-2xl font-semibold tracking-tight mb-4">Conferir gabarito (bolinhas)</h1>
-    <span class="text-sm text-slate-600">Clique nas bolinhas para marcar/desmarcar • Remover: <span class="kbd">Ctrl</span>+Clique</span>
+    <span class="text-sm text-slate-600">
+      Clique nas bolinhas para marcar/desmarcar • Remover:
+      <span class="kbd">Ctrl</span>+Clique
+    </span>
 
     <!-- TOOLS BAR 100% -->
     <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm mb-6">
       <div class="flex flex-wrap items-center gap-3 w-full">
-        
-
         <div class="ml-auto flex items-center gap-2">
-          <button id="btnDetect" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50">Carregar bolinhas</button>
-          <button id="btnAdd" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50" title="A">Adicionar (A)</button>
+          <button
+            id="btnDetect"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+          >
+            Carregar bolinhas
+          </button>
+          <button
+            id="btnAdd"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+            title="A"
+          >
+            Adicionar (A)
+          </button>
           <label class="text-sm text-slate-600 flex items-center gap-2">
             Raio novas:
             <input id="radius" type="range" min="4" max="40" value="12" class="w-40">
@@ -97,13 +128,19 @@
           </label>
         </div>
 
-     
-          <button id="btnToggleAll" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50">Alternar tudo</button>
-          <button id="btnSave" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">Salvar</button>
-        
-     
+        <button
+          id="btnToggleAll"
+          class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+        >
+          Alternar tudo
+        </button>
+        <button
+          id="btnSave"
+          class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          Salvar
+        </button>
       </div>
-      
     </section>
 
     <!-- DUAS COLUNAS -->
@@ -114,10 +151,24 @@
           * “Carregar bolinhas” lê o <code>bubbles.json</code> (raiz → <code>/uploads</code> → API).  
           * O filtro por escuridão descarta bolhas que não são realmente preenchidas.
         </div>
-        <div class="flex items-center gap-2" style="margin-top:8px; margin-bottom:5px;">
-          <button id="btnPrev" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50" title="Anterior (←)">Anterior</button>
-          <button id="btnNext" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50" title="Próximo (→)">Próximo</button>
+
+        <div class="flex items-center gap-2 mt-2 mb-1">
+          <button
+            id="btnPrev"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+            title="Anterior (←)"
+          >
+            Anterior
+          </button>
+          <button
+            id="btnNext"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+            title="Próximo (→)"
+          >
+            Próximo
+          </button>
         </div>
+
         <div class="canvas-wrap">
           {% if imagem_url %}
             <img id="sheet" src="{{ imagem_url }}" alt="Gabarito" />
@@ -125,37 +176,61 @@
           {% else %}
             <div class="p-6 text-slate-600">
               <p class="font-semibold text-rose-700">Nenhuma imagem encontrada.</p>
-              <p>Coloque <code>image.png</code> em <code>/uploads</code> ou no diretório raiz e recarregue.</p>
+              <p>
+                Coloque <code>image.png</code> em <code>/uploads</code> ou no diretório raiz e recarregue.
+              </p>
             </div>
           {% endif %}
         </div>
+
         <p id="status" class="text-sm text-slate-600 min-h-[20px] mt-3"></p>
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-xs text-slate-500">
+
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-xs text-slate-500 mt-3">
           * “Carregar bolinhas” lê o <code>bubbles.json</code> (raiz → <code>/uploads</code> → API).  
           * O filtro por escuridão descarta bolhas que não são realmente preenchidas.
         </div>
-        <div class="flex items-center gap-2" style="margin-top:8px;">
-          <button id="btnPrev" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50" title="Anterior (←)">Anterior</button>
-          <button id="btnNext" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50" title="Próximo (→)">Próximo</button>
+
+        <div class="flex items-center gap-2 mt-2">
+          <button
+            id="btnPrev"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+            title="Anterior (←)"
+          >
+            Anterior
+          </button>
+          <button
+            id="btnNext"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+            title="Próximo (→)"
+          >
+            Próximo
+          </button>
         </div>
       </section>
 
       <!-- DIREITA: formulário + gabarito -->
       <aside class="space-y-4">
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
- 
-
           <div class="grid grid-cols-1 gap-4">
             <div>
               <label for="nomeInput" class="block text-sm font-medium text-slate-700 mb-1">Nome</label>
-              <input id="nomeInput" type="text" placeholder="Digite o nome completo"
-                     class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input
+                id="nomeInput"
+                type="text"
+                placeholder="Digite o nome completo"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
             <div>
               <label for="cpfInput" class="block text-sm font-medium text-slate-700 mb-1">CPF</label>
-              <input id="cpfInput" type="text" inputmode="numeric" placeholder="Somente números"
-                     class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input
+                id="cpfInput"
+                type="text"
+                inputmode="numeric"
+                placeholder="Somente números"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
             <div>
@@ -202,25 +277,11 @@
           <!-- colunas: 2 no mobile, 4 no md+ -->
           <div id="gabaritoBox" class="columns-2 md:columns-4 gap-x-6"></div>
         </div>
-
-        
       </aside>
     </div>
   </main>
 
   <script>
-    // Sidebar overlay
-    const body = document.body;
-    const btnOpen = document.getElementById('btnOpen');
-    const btnClose = document.getElementById('btnClose');
-    const overlay = document.querySelector('.overlay');
-    const toggleSidebar = () => body.classList.toggle('sidebar-open');
-    const closeSidebar = () => body.classList.remove('sidebar-open');
-    btnOpen?.addEventListener('click', toggleSidebar);
-    btnClose?.addEventListener('click', closeSidebar);
-    overlay?.addEventListener('click', closeSidebar);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
-
     // ======= Lógica das bolinhas =======
     const IMAGE_NAME = {{ (imagem_nome or '""')|tojson }};
     const HAS_IMAGE = Boolean({{ 'true' if imagem_url else 'false' }});
@@ -279,8 +340,14 @@
         });
         input.addEventListener('focus', ()=> { focoAtual = i; });
         input.addEventListener('keydown', (e)=>{
-          if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); focusQuestao(Math.min(60, i+1)); }
-          if (e.key === 'ArrowLeft') { e.preventDefault(); focusQuestao(Math.max(1, i-1)); }
+          if (e.key === 'Enter' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            focusQuestao(Math.min(60, i+1));
+          }
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            focusQuestao(Math.max(1, i-1));
+          }
         });
 
         wrap.appendChild(label);
@@ -333,7 +400,10 @@
       const viewBox = svg.viewBox.baseVal;
       const sx = viewBox.width / rect.width;
       const sy = viewBox.height / rect.height;
-      return { x: viewBox.x + (clientX - rect.left) * sx, y: (viewBox.y || 0) + (clientY - rect.top) * sy };
+      return {
+        x: viewBox.x + (clientX - rect.left) * sx,
+        y: (viewBox.y || 0) + (clientY - rect.top) * sy
+      };
     }
 
     function handleOverlayClick(ev) {
@@ -453,13 +523,16 @@
             meta: { nome, cpf, tipo, cor, gabaritoTranscrito: coletado }
           };
           const resp = await fetch('/api/bubbles', {
-            method: 'POST', headers: {'Content-Type':'application/json'},
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
             body: JSON.stringify(payload)
           });
           const data = await resp.json();
           if (!resp.ok || !data.ok) throw new Error(data.error || 'Falha ao salvar');
           setStatus(`Salvo com sucesso (${data.count} bolinhas ativas).`);
-        } catch (e) { setStatus(`Erro ao salvar: ${e.message}`, false); }
+        } catch (e) {
+          setStatus(`Erro ao salvar: ${e.message}`, false);
+        }
       });
 
       btnDownload?.addEventListener('click', () => {
@@ -475,7 +548,11 @@
           coletado.push(val);
         }
 
-        const payload = { image: IMAGE_NAME || 'image.png', circles: active, meta: { nome, cpf, tipo, cor, gabaritoTranscrito: coletado } };
+        const payload = {
+          image: IMAGE_NAME || 'image.png',
+          circles: active,
+          meta: { nome, cpf, tipo, cor, gabaritoTranscrito: coletado }
+        };
         download('bubbles_atualizado.json', JSON.stringify(payload, null, 2));
       });
 
@@ -500,7 +577,11 @@
 
       // Imagem e overlay
       if (!img) return setStatus('Nenhuma imagem disponível.', false);
-      await new Promise(res => { if (img.complete) return res(); img.onload = res; img.onerror = res; });
+      await new Promise(res => {
+        if (img.complete) return res();
+        img.onload = res;
+        img.onerror = res;
+      });
       const vw = img.naturalWidth || img.width;
       const vh = img.naturalHeight || img.height;
       svg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
@@ -508,12 +589,20 @@
       bindEvents();
       setupSampler();
 
-      try { await loadBubblesFromServer(); } catch(e){ setStatus(e.message, false); }
+      try {
+        await loadBubblesFromServer();
+      } catch(e){
+        setStatus(e.message, false);
+      }
+
       // raio padrão
       const rs = bubbles.map(b => b.r).sort((a,b)=>a-b);
       const m = rs.length ? Math.round(rs[Math.floor(rs.length/2)]) : 12;
-      radius.value = m; radiusVal.textContent = m;
-      radius.addEventListener('input', () => { radiusVal.textContent = radius.value; });
+      radius.value = m;
+      radiusVal.textContent = m;
+      radius.addEventListener('input', () => {
+        radiusVal.textContent = radius.value;
+      });
     }
     init();
   </script>

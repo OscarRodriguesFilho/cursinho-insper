@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Perfil Acadêmico • Simulados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --sidebar-w: 260px;
+      --controls-h: 64px;
+    }
+    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial }
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+
+    /* ===== Sidebar overlay (não desloca o conteúdo) ===== */
+    .sidebar { width: var(--sidebar-w); transform: translateX(-100%); transition: transform .25s ease; }
+    body.sidebar-open .sidebar { transform: translateX(0); }
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; backdrop-filter: blur(2px); z-index: 30; }
+    body.sidebar-open .overlay { opacity: 1; pointer-events: auto; }
+
+    /* Botão flutuante menu */
+    .fab-open { position: fixed; top: 1rem; left: 1rem; z-index: 50; transition: opacity .2s ease; }
+    body.sidebar-open .fab-open { opacity: 0; pointer-events: none; }
+
+    /* Link ativo da nav */
+    .nav-link-active { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+
+    /* Ícones sociais coloridos */
+    .ig { color:#E1306C; }       /* Instagram */
+    .li { color:#0A66C2; }       /* LinkedIn */
+    .tk { color:#111827; }       /* TikTok (preto) */
+
+    /* Borda preta para o ícone do site */
+    .site-badge { border:2px solid #111827; }
+
+    /* ====== LAYOUT DA PÁGINA DE PERFIL ====== */
+
+    :root {
+      --bg-page: #f5f7fb;
+      --bg-card: #ffffff;
+      --border-soft: #e1e5f0;
+      --text-main: #111827;
+      --text-soft: #6b7280;
+      --primary: #2563eb;
+      --primary-soft: #e0edff;
+      --danger: #f97373;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --radius-card: 18px;
+      --shadow-card: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    main {
+      /* espaço extra pro botão flutuante ficar bonito */
+      padding-top: 2.5rem;
+      padding-bottom: 3rem;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: transparent;
+      color: var(--text-main);
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .page-title-block h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .page-title-block p {
+      margin: .25rem 0 0;
+      color: var(--text-soft);
+      font-size: .9rem;
+    }
+
+    .file-select {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .5rem .9rem;
+      background: #ffffff;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: .85rem;
+      color: var(--text-soft);
+      box-shadow: 0 4px 10px rgba(148, 163, 184, 0.15);
+      white-space: nowrap;
+    }
+
+    /* ======== CARD DE FILTROS / RESUMO ======== */
+
+    .filters-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-card);
+      padding: 1.1rem 1.3rem 1.3rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .filters-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+      gap: .9rem;
+      align-items: center;
+      margin-bottom: .7rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+      font-size: .8rem;
+      color: var(--text-soft);
+    }
+
+    .filter-group label {
+      font-weight: 500;
+    }
+
+    .filter-select {
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      padding: .45rem .75rem;
+      font-size: .85rem;
+      outline: none;
+      background: #f9fafb;
+      color: var(--text-main);
+    }
+
+    .btn-primary {
+      padding: .4rem 1.2rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: .9rem;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-top: 1.6rem;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .filters-footer {
+      margin-top: .2rem;
+      font-size: .8rem;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .chips-row {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+    }
+
+    .chip {
+      padding: .15rem .65rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      background: var(--primary-soft);
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    /* ======== KPIs ======== */
+
+    .kpis-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-card);
+      padding: .8rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+    }
+
+    .kpi-label {
+      font-size: .78rem;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .kpi-sub {
+      font-size: .8rem;
+      color: var(--text-soft);
+    }
+
+    /* ======== GRIDS DE CARDS ======== */
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.3fr);
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-2-equal {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-card);
+      padding: 1rem 1.1rem 1.2rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .55rem;
+      gap: .5rem;
+    }
+
+    .card-title {
+      font-size: .95rem;
+      font-weight: 600;
+    }
+
+    .card-tag {
+      font-size: .75rem;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      white-space: nowrap;
+    }
+
+    .card-subtitle {
+      font-size: .8rem;
+      color: var(--text-soft);
+      margin-bottom: .7rem;
+    }
+
+    /* ===== Gráficos responsivos redondinhos ===== */
+
+    .chart-shell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+    }
+
+    .chart-shell-wide {
+      aspect-ratio: 16 / 9;
+    }
+
+    .chart-shell canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .empty-chart {
+      font-size: .85rem;
+      color: var(--text-soft);
+      padding: .3rem 0 .1rem;
+    }
+
+    /* ======== INSIGHTS ======== */
+
+    .insights-list {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      font-size: .85rem;
+    }
+
+    .insight-item {
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: .6rem .7rem;
+      background: #f9fafb;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: .3rem .6rem;
+    }
+
+    .insight-badge {
+      width: .6rem;
+      height: .6rem;
+      border-radius: 999px;
+      margin-top: .2rem;
+    }
+
+    .insight-badge.good {
+      background: var(--good);
+    }
+    .insight-badge.warn {
+      background: var(--warn);
+    }
+    .insight-badge.bad {
+      background: var(--danger);
+    }
+
+    .insight-label {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-soft);
+      grid-column: 1 / -1;
+    }
+
+    .insight-text {
+      grid-column: 2 / -1;
+    }
+
+    .footer-note {
+      font-size: .8rem;
+      color: var(--text-soft);
+      margin-top: .5rem;
+    }
+
+    @media (max-width: 1100px) {
+      .filters-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .kpis-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid-2,
+      .grid-2-equal {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 800px) {
+      main {
+        padding-top: 1.5rem;
+      }
+      .page {
+        padding: 0;
+      }
+      .filters-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .kpis-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .grid-3 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .file-select {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+
+<!-- Botão flutuante de abrir menu -->
+<button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+        aria-label="Abrir menu">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
+  </svg>
+</button>
+
+<!-- Overlay -->
+<div class="overlay"></div>
+
+<!-- ===== Sidebar unificada ===== -->
+<aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
+  <div class="h-full flex flex-col">
+    <!-- Topo -->
+    <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
+      <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
+      <div class="flex-1">
+        <div class="text-sm font-semibold leading-5">Simulados</div>
+        <div class="text-[11px] text-slate-500">Painel de perfil</div>
+      </div>
+      <button id="btnClose" class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Itens principais -->
+    <nav class="flex-1 overflow-y-auto px-2 py-3">
+      <ul class="space-y-1">
+        <li>
+          <a href="/" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/perfil_academico" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg>
+            <span>Perfil dos alunos</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/dashboard" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            <span>Relatório vestibulinho</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/dashboard_marketing" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v16H4zm6 6h4v10h-4zm6-4h4v14h-4z"/></svg>
+            <span>Relatório marketing</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/respostas" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-2v9H7v2h9l4 4V6zM17 2H3c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span>Respostas</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Redes sociais -->
+      <div class="mt-6">
+        <div class="px-2 text-[11px] uppercase tracking-wide text-slate-500">Redes</div>
+        <div class="mt-2 grid grid-cols-4 gap-2 px-2">
+          <!-- Site oficial -->
+          <a href="https://cursinhoinsper.org/?utm_source=instagram&utm_medium=post&utm_campaign=voluntarios_alunos&utm_id=0"
+             target="_blank" rel="noopener"
+             class="focus-ring flex items-center justify-center rounded-lg bg-white p-1.5 site-badge"
+             title="Site oficial">
+            <img src="https://cursinhoinsper.org/assets/images/apple-touch-icon.png?v=072e23cf"
+                 alt="Site Cursinho Insper" class="h-6 w-6 object-contain"/>
+          </a>
+
+          <!-- Instagram -->
+          <a href="https://www.instagram.com/cursinho.insper/" target="_blank" rel="noopener"
+             class="focus-ring flex items-center justify-center rounded-lg bg-white p-2 border border-slate-200 hover:bg-slate-50"
+             title="Instagram">
+            <svg class="h-5 w-5 ig" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3a5 5 0 110 10 5 5 0 010-10zm0 2.2a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zM18 6.3a1 1 0 110 2 1 1 0 010-2z"/>
+            </svg>
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/company/78313776/admin/dashboard/" target="_blank" rel="noopener"
+             class="focus-ring flex items-center justify-center rounded-lg bg-white p-2 border border-slate-200 hover:bg-slate-50"
+             title="LinkedIn">
+            <svg class="h-5 w-5 li" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.05c.53-1 1.82-2.2 3.75-2.2 4 0 4.75 2.6 4.75 6V24h-4v-7.2c0-1.72-.03-3.93-2.4-3.93-2.4 0-2.77 1.87-2.77 3.8V24h-4V8z"/>
+            </svg>
+          </a>
+
+          <!-- TikTok -->
+          <a href="https://www.tiktok.com/@cursinho.insper" target="_blank" rel="noopener"
+             class="focus-ring flex items-center justify-center rounded-lg bg-white p-2 border border-slate-200 hover:bg-slate-50"
+             title="TikTok">
+            <svg class="h-5 w-5 tk" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13.5 2a6.5 6.5 0 006.5 6.5V12a10 10 0 01-6.5-2.3V16a6 6 0 11-6-6c.35 0 .69.03 1.02.1v3.06a3 3 0 102.98 3V2h2z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Rodapé da sidebar -->
+    <div class="mt-auto border-t border-slate-200 px-2 py-3">
+      <a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+        <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg>
+        <span>Voltar ao início</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== Conteúdo principal ===== -->
+<main class="mx-auto max-w-6xl md:max-w-6xl px-6">
+  <div class="page">
+
+    <!-- CABEÇALHO -->
+    <div class="page-header">
+      <div class="page-title-block">
+        <h1>Análise de perfil acadêmico</h1>
+        <p>Contexto, rotina e autoavaliação dos(as) estudantes a partir do formulário de perfil.</p>
+      </div>
+      <div class="file-select">
+        Arquivo ativo:
+        <strong>Formulário Perfil Acadêmico.xlsx</strong>
+      </div>
+    </div>
+
+    <!-- FILTROS / RESUMO -->
+    <section class="filters-card">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="f-situacao">Situação escolar</label>
+          <select id="f-situacao" class="filter-select">
+            <option value="todos">Todos</option>
+            <option value="em_andamento">No ensino médio</option>
+            <option value="egressos">Já concluiu</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="f-tipo-escola">Tipo de escola</label>
+          <select id="f-tipo-escola" class="filter-select">
+            <option value="todos">Todos</option>
+            <option value="publico">Público</option>
+            <option value="privado">Privado</option>
+            <option value="ambos">Ambos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="f-turno">Turno</label>
+          <select id="f-turno" class="filter-select">
+            <option value="todos">Todos</option>
+            <option value="diurno">Meio período (diurno)</option>
+            <option value="integral">Integral</option>
+            <option value="noturno">Noturno</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="f-condicao">Aprendizagem</label>
+          <select id="f-condicao" class="filter-select">
+            <option value="todos">Todos</option>
+            <option value="com">Relatou alguma condição</option>
+            <option value="sem">Não relatou</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="f-socio">Apoio socioemocional</label>
+          <select id="f-socio" class="filter-select">
+            <option value="todos">Todos</option>
+            <option value="sim">Utiliza o programa</option>
+            <option value="nao">Não utiliza</option>
+          </select>
+        </div>
+        <button type="button" id="btnApplyFilters" class="btn-primary">
+          Aplicar filtros
+        </button>
+      </div>
+      <div class="filters-footer">
+        <span>Dados consolidados a partir das respostas mais recentes do formulário.</span>
+        <div class="chips-row">
+          <span class="chip" id="chip-respondentes">Respondentes: –</span>
+          <span class="chip" id="chip-sono">Sono médio: –</span>
+          <span class="chip" id="chip-estudo">Estudo extra: –</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="kpis-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Respondentes</div>
+        <div class="kpi-value" id="kpi-respondentes">–</div>
+        <div class="kpi-sub" id="kpi-respondentes-sub"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Sono médio</div>
+        <div class="kpi-value" id="kpi-sono">–</div>
+        <div class="kpi-sub">Horas de sono por noite</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Estudo extraclasse</div>
+        <div class="kpi-value" id="kpi-estudo">–</div>
+        <div class="kpi-sub">Horas de estudo além das aulas</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Autoavaliação</div>
+        <div class="kpi-value" id="kpi-desempenho">–</div>
+        <div class="kpi-sub" id="kpi-desempenho-sub"></div>
+      </div>
+    </section>
+
+    <!-- GRID 1 -->
+    <section class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Situação escolar & turno</div>
+          <span class="card-tag">Contexto escolar</span>
+        </div>
+        <div class="card-subtitle">
+          Distribuição entre ensino médio, egressos, tipo de escola e turnos de estudo.
+        </div>
+        <div class="grid-2-equal">
+          <div class="chart-shell">
+            <canvas id="chartEnsino"></canvas>
+          </div>
+          <div class="chart-shell">
+            <canvas id="chartTurno"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Percepção de desempenho</div>
+          <span class="card-tag">Autoavaliação</span>
+        </div>
+        <div class="card-subtitle">
+          Como os(as) estudantes percebem o próprio desempenho geral nos simulados.
+        </div>
+        <div class="chart-shell chart-shell-wide">
+          <canvas id="chartDesempenho"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRID 2: áreas & rotina -->
+    <section class="grid-2-equal">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Desempenho por área dos simulados</div>
+          <span class="card-tag">Matriz de habilidades</span>
+        </div>
+        <div class="card-subtitle">
+          Médias de auto-percepção em Matemática, Português, Ciências da Natureza,
+          Ciências Humanas e Redação (escala 1–5).
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartAreas"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Rotina & carga de atividades</div>
+          <span class="card-tag">Tempo & bem-estar</span>
+        </div>
+        <div class="card-subtitle">
+          Distribuição de horas dedicadas a estudo, sono, lazer e trabalho/tarefas domésticas.
+        </div>
+        <div class="chart-shell chart-shell-wide">
+          <canvas id="chartRotina"></canvas>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- GRID 3: complementares / simulados / dispositivo -->
+    <section class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Atividades complementares</div>
+          <span class="card-tag">Monitorias & eventos</span>
+        </div>
+        <div class="card-subtitle">
+          Participação em monitorias, plantões de dúvidas, eventos e outras atividades extras do Cursinho.
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartComplementares"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Participação nos simulados</div>
+          <span class="card-tag">Engajamento avaliativo</span>
+        </div>
+        <div class="card-subtitle">
+          Frequência de participação nos simulados ao longo do semestre.
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartSimulados"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Dispositivos de realização</div>
+          <span class="card-tag">Infraestrutura & acesso</span>
+        </div>
+        <div class="card-subtitle">
+          Em que dispositivo os(as) estudantes costumam fazer os simulados (celular, computador etc.).
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartDispositivo"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRID 3: condições, socio, material -->
+    <section class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Condições de aprendizagem</div>
+          <span class="card-tag">Saúde & acessibilidade</span>
+        </div>
+        <div class="card-subtitle">
+          Participação de estudantes que relatam alguma condição ou dificuldade de aprendizagem.
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartCondicoes"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Apoio socioemocional</div>
+          <span class="card-tag">Suporte ao estudante</span>
+        </div>
+        <div class="card-subtitle">
+          Uso do programa de apoio socioemocional do Cursinho entre os respondentes.
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartSocio"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Material físico Bernoulli</div>
+          <span class="card-tag">Recursos de estudo</span>
+        </div>
+        <div class="card-subtitle">
+          Distribuição de quem recebeu as apostilas/livros e percepção de impacto no desempenho.
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartMaterial"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRID 3: dúvidas + insights -->
+    <section class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Interação para tirar dúvidas</div>
+          <span class="card-tag">Relação com tutores</span>
+        </div>
+        <div class="card-subtitle">
+          Frequência com que estudantes procuram professores e tutores para esclarecer dúvidas.
+        </div>
+        <div class="chart-shell">
+          <canvas id="chartInteracao"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Resumo de perfil & desempenho</div>
+          <span class="card-tag">Insights automáticos</span>
+        </div>
+        <div class="insights-list" id="insights-container">
+          <!-- preenchido via JS -->
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Contexto geral</div>
+          <span class="card-tag">Leitura rápida</span>
+        </div>
+        <p class="card-subtitle">
+          Este painel permite cruzar, de forma visual, o perfil social e acadêmico dos(as) estudantes:
+          rotina de estudos, condições de aprendizagem, participação em simulados, uso de materiais e
+          suporte socioemocional.
+        </p>
+        <p class="card-subtitle">
+          A combinação dos filtros no topo com os gráficos ajuda a identificar grupos específicos
+          (ex.: estudantes que trabalham muitas horas, dormem pouco e se avaliam abaixo do esperado)
+          para ações mais direcionadas.
+        </p>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Os gráficos acima usam apenas dados agregados, sem exibir respostas individuais.
+      À medida que o formulário recebe mais respostas, novas leituras e insights podem ser adicionados.
+    </p>
+
+    <footer class="mt-8 pb-6 text-center text-xs text-slate-400">
+      © <span id="year"></span> Simulados — Painel de perfil acadêmico.
+    </footer>
+
+  </div>
+</main>
+
+<!-- ====== JS: NAV + PERFIL ====== -->
+<script>
+  // Ano no rodapé
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Sidebar overlay
+  const body = document.body;
+  const btnOpen = document.getElementById('btnOpen');
+  const btnClose = document.getElementById('btnClose');
+  const overlay = document.querySelector('.overlay');
+  const toggleSidebar = () => body.classList.toggle('sidebar-open');
+  const closeSidebar = () => body.classList.remove('sidebar-open');
+  btnOpen?.addEventListener('click', toggleSidebar);
+  btnClose?.addEventListener('click', closeSidebar);
+  overlay?.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+  // Marca o item ativo da nav
+  (function markActive(){
+    const path = location.pathname.replace(/\/+$/, '') || '/';
+    document.querySelectorAll('.sidebar a.nav-link').forEach(a => {
+      const href = a.getAttribute('href');
+      if (!href || href.startsWith('http')) return;
+      if ((href === '/' && path === '/') || (href !== '/' && path.startsWith(href))) {
+        a.classList.add('nav-link-active');
+      }
+    });
+  })();
+
+  // ========= DADOS VINDOS DO FLASK =========
+  // Garante que nunca gera "window.perfilData = ;" (que quebra o JS)
+  window.perfilData = {{ (perfil_data or {}) | tojson | safe }};
+  console.log('perfilData carregado do Flask:', window.perfilData);
+
+  const perfilData = window.perfilData || {
+    total_respostas: 0,
+    ensino_medio: { labels: [], counts: [] },
+    turno: { labels: [], counts: [] },
+    desempenho_geral: { labels: [], counts: [] },
+    desempenho_areas: { labels: [], medias: [] },
+    evolucao: { labels: [], counts: [] },
+    simulados: { labels: [], counts: [] },
+    complementares: { labels: [], counts: [] },
+    dispositivo: { labels: [], counts: [] },
+    participacao_aulas: { labels: [], counts: [] },
+    interacao_duvidas: { labels: [], counts: [] },
+    material_fisico: { labels: [], counts: [] },
+    impacto_material: { labels: [], counts: [] },
+    estudo: { labels: [], counts: [] },
+    sono: { labels: [], counts: [] },
+    lazer: { labels: [], counts: [] },
+    trabalho: { labels: [], counts: [] },
+    deslocamento: { labels: [], counts: [] },
+    condicoes: { labels: [], counts: [] },
+    socioemocional: { labels: [], counts: [] },
+    medias_resumo: { sono: null, estudo: null },
+  };
+
+  // ========= HELPERS =========
+  function toNumber(v, defVal = 0) {
+    const n = Number(v);
+    return isFinite(n) ? n : defVal;
+  }
+
+  function sum(arr) {
+    return (arr || []).reduce((a, b) => a + toNumber(b), 0);
+  }
+
+  function buildPercentages(counts) {
+    const total = sum(counts) || 1;
+    return (counts || []).map(c => (toNumber(c) * 100) / total);
+  }
+
+  function nicePercent(v) {
+    if (v == null || !isFinite(v)) return "–";
+    return v.toFixed(1).replace(".", ",") + " %";
+  }
+
+  function fmtHours(v) {
+    if (v == null) return "–";
+    const n = toNumber(v);
+    if (!isFinite(n) || n === 0) return "–";
+    return n.toFixed(1).replace(".", ",") + " h/dia";
+  }
+
+  function showEmptyCanvasMessage(canvas, text) {
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    parent.innerHTML = '<div class="empty-chart">' + (text || 'Sem dados suficientes para este gráfico.') + '</div>';
+  }
+
+  function createDoughnutChart(canvasId, labels, counts, colors) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const total = sum(counts || []);
+    if (!total) {
+      showEmptyCanvasMessage(canvas);
+      return;
+    }
+    new Chart(canvas.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: labels || [],
+        datasets: [{
+          data: counts || [],
+          backgroundColor: colors
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#6b7280", font: { size: 10 } } },
+          tooltip: {
+            backgroundColor: "#111827",
+            borderColor: "#e5e7eb",
+            borderWidth: 1,
+            titleFont: { size: 12 },
+            bodyFont: { size: 11 }
+          }
+        },
+        cutout: "60%"
+      }
+    });
+  }
+
+  const chartBaseOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: "#6b7280",
+          font: { size: 11 }
+        }
+      },
+      tooltip: {
+        backgroundColor: "#111827",
+        borderColor: "#e5e7eb",
+        borderWidth: 1,
+        titleFont: { size: 12 },
+        bodyFont: { size: 11 }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: "#6b7280", font: { size: 10 } },
+        grid: { color: "#e5e7eb" }
+      },
+      y: {
+        ticks: { color: "#6b7280", font: { size: 10 } },
+        grid: { color: "#e5e7eb" }
+      }
+    }
+  };
+
+  // ========= KPIs & chips =========
+  (function setupKPIs() {
+    const total = perfilData.total_respostas || 0;
+    document.getElementById("kpi-respondentes").textContent = total || "–";
+    document.getElementById("chip-respondentes").textContent =
+      `Respondentes: ${total || "–"}`;
+
+    // ensino médio x egresso
+    const emLabels = perfilData.ensino_medio.labels || [];
+    const emCounts = perfilData.ensino_medio.counts || [];
+    let ativos = 0, egressos = 0;
+    emLabels.forEach((lab, i) => {
+      const c = toNumber(emCounts[i]);
+      const l = String(lab || "").toLowerCase();
+      if (l.includes("já conclui")) egressos += c;
+      else ativos += c;
+    });
+    const t = ativos + egressos || 1;
+    const pAtivos = (ativos * 100) / t;
+    const pEgressos = (egressos * 100) / t;
+    document.getElementById("kpi-respondentes-sub").textContent =
+      `${nicePercent(pAtivos)} cursando EM · ${nicePercent(pEgressos)} egressos`;
+
+    document.getElementById("kpi-sono").textContent =
+      fmtHours(perfilData.medias_resumo?.sono);
+    document.getElementById("chip-sono").textContent =
+      `Sono médio: ${fmtHours(perfilData.medias_resumo?.sono)}`;
+
+    document.getElementById("kpi-estudo").textContent =
+      fmtHours(perfilData.medias_resumo?.estudo);
+    document.getElementById("chip-estudo").textContent =
+      `Estudo extra: ${fmtHours(perfilData.medias_resumo?.estudo)}`;
+
+    // autoavaliação: dentro/acima do esperado
+    const dLabels = perfilData.desempenho_geral.labels || [];
+    const dCounts = perfilData.desempenho_geral.counts || [];
+    let ok = 0, tot = 0;
+    dLabels.forEach((lab, i) => {
+      const c = toNumber(dCounts[i]);
+      tot += c;
+      const l = String(lab || "").toLowerCase();
+      if (
+        l.includes("dentro do esperado") ||
+        l.includes("acima do esperado") ||
+        l.includes("muito acima")
+      ) ok += c;
+    });
+    const pOk = tot ? (ok * 100) / tot : null;
+    document.getElementById("kpi-desempenho").textContent =
+      pOk == null ? "–" : nicePercent(pOk);
+    document.getElementById("kpi-desempenho-sub").textContent =
+      "declaram desempenho dentro ou acima do esperado";
+  })();
+
+  /* ========= Gráficos ========= */
+
+  // Situação escolar / turno
+  (function chartEnsinoTurno() {
+    createDoughnutChart(
+      "chartEnsino",
+      perfilData.ensino_medio.labels || [],
+      perfilData.ensino_medio.counts || [],
+      ["#60a5fa", "#f97373", "#22c55e", "#a855f7", "#facc15"]
+    );
+
+    createDoughnutChart(
+      "chartTurno",
+      perfilData.turno.labels || [],
+      perfilData.turno.counts || [],
+      ["#22c55e", "#3b82f6", "#a855f7", "#f97373"]
+    );
+  })();
+
+  // Percepção de desempenho
+  (function chartDesempenho() {
+    const canvas = document.getElementById("chartDesempenho");
+    if (!canvas) return;
+
+    const labels = perfilData.desempenho_geral.labels || [];
+    const counts = perfilData.desempenho_geral.counts || [];
+    if (!sum(counts)) {
+      showEmptyCanvasMessage(canvas);
+      return;
+    }
+    const perc = buildPercentages(counts);
+
+    new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "% de respondentes",
+          data: perc,
+          backgroundColor: "#60a5fa",
+          borderRadius: 10,
+          maxBarThickness: 40
+        }]
+      },
+      options: {
+        ...chartBaseOptions,
+        scales: {
+          x: {
+            ticks: { color: "#6b7280", font: { size: 11 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              color: "#6b7280",
+              callback: v => v + "%"
+            },
+            grid: { color: "#e5e7eb" }
+          }
+        }
+      }
+    });
+  })();
+
+  // Radar de áreas
+  (function chartAreas() {
+    const canvas = document.getElementById("chartAreas");
+    if (!canvas) return;
+
+    const labels = perfilData.desempenho_areas.labels || [];
+    const values = (perfilData.desempenho_areas.medias || []).map(toNumber);
+    if (!values.length) {
+      showEmptyCanvasMessage(canvas);
+      return;
+    }
+
+    new Chart(canvas.getContext("2d"), {
+      type: "radar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Média (1–5)",
+          data: values,
+          fill: true,
+          backgroundColor: "rgba(96,165,250,.25)",
+          borderColor: "#2563eb",
+          pointBackgroundColor: "#2563eb"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: "#6b7280", font: { size: 10 } } },
+          tooltip: {
+            backgroundColor: "#111827",
+            borderColor: "#e5e7eb",
+            borderWidth: 1,
+            titleFont: { size: 12 },
+            bodyFont: { size: 11 }
+          }
+        },
+        scales: {
+          r: {
+            min: 0,
+            max: 5,
+            ticks: {
+              color: "#9ca3af",
+              backdropColor: "transparent",
+              stepSize: 1
+            },
+            grid: { color: "#e5e7eb" },
+            angleLines: { color: "#e5e7eb" },
+            pointLabels: { color: "#4b5563", font: { size: 11 } }
+          }
+        }
+      }
+    });
+  })();
+
+  // Rotina (barras horizontais)
+  (function chartRotina() {
+    const canvas = document.getElementById("chartRotina");
+    if (!canvas) return;
+
+    const grupos = [
+      { nome: "Estudo extra", data: perfilData.estudo },
+      { nome: "Sono", data: perfilData.sono },
+      { nome: "Lazer", data: perfilData.lazer },
+      { nome: "Trabalho/tarefas", data: perfilData.trabalho }
+    ];
+
+    const labelsSet = new Set();
+    grupos.forEach(g => {
+      const labs = g.data.labels || [];
+      const counts = g.data.counts || [];
+      labs
+        .map((lab, i) => ({ lab, c: toNumber(counts[i]) }))
+        .sort((a, b) => b.c - a.c)
+        .slice(0, 4)
+        .forEach(x => labelsSet.add(x.lab));
+    });
+    const allLabels = Array.from(labelsSet);
+    if (!allLabels.length) {
+      showEmptyCanvasMessage(canvas);
+      return;
+    }
+
+    function dataset(grupo, color) {
+      const map = {};
+      (grupo.data.labels || []).forEach((lab, i) => {
+        map[lab] = (map[lab] || 0) + toNumber(grupo.data.counts[i]);
+      });
+      const total = Object.values(map).reduce((a, b) => a + b, 0) || 1;
+      const data = allLabels.map(l => {
+        const c = map[l] || 0;
+        return (c * 100) / total;
+      });
+      return {
+        label: grupo.nome,
+        data,
+        backgroundColor: color,
+        borderRadius: 8
+      };
+    }
+
+    new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: allLabels,
+        datasets: [
+          dataset(grupos[0], "#60a5fa"),
+          dataset(grupos[1], "#34d399"),
+          dataset(grupos[2], "#a855f7"),
+          dataset(grupos[3], "#fbbf24")
+        ]
+      },
+      options: {
+        ...chartBaseOptions,
+        indexAxis: "y",
+        scales: {
+          x: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              color: "#6b7280",
+              callback: v => v + "%"
+            },
+            grid: { color: "#e5e7eb" }
+          },
+          y: {
+            ticks: { color: "#6b7280", font: { size: 10 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  })();
+
+  // Evolução dos simulados
+  (function chartEvolucao() {
+    const canvas = document.getElementById("chartEvolucao");
+    if (!canvas) return;
+    const labels = perfilData.evolucao?.labels || [];
+    const counts = perfilData.evolucao?.counts || [];
+    if (!sum(counts)) {
+      showEmptyCanvasMessage(canvas);
+      return;
+    }
+    const perc = buildPercentages(counts);
+
+    new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "% de respondentes",
+          data: perc,
+          backgroundColor: "#4ade80",
+          borderRadius: 10,
+          maxBarThickness: 40
+        }]
+      },
+      options: {
+        ...chartBaseOptions,
+        scales: {
+          x: {
+            ticks: { color: "#6b7280", font: { size: 11 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              color: "#6b7280",
+              callback: v => v + "%"
+            },
+            grid: { color: "#e5e7eb" }
+          }
+        }
+      }
+    });
+  })();
+
+  // Complementares / simulados / dispositivo / participação / interação / material / condicoes / socio
+  (function otherDoughnuts() {
+    // Complementares
+    createDoughnutChart(
+      "chartComplementares",
+      perfilData.complementares.labels || [],
+      perfilData.complementares.counts || [],
+      ["#3b82f6", "#a855f7", "#22c55e", "#f97373"]
+    );
+
+    // Simulados
+    createDoughnutChart(
+      "chartSimulados",
+      perfilData.simulados.labels || [],
+      perfilData.simulados.counts || [],
+      ["#22c55e", "#f97373", "#fbbf24"]
+    );
+
+    // Dispositivo (usei barras em vez de donut para variar)
+    (function chartDispositivo() {
+      const canvas = document.getElementById("chartDispositivo");
+      if (!canvas) return;
+      const labels = perfilData.dispositivo.labels || [];
+      const counts = perfilData.dispositivo.counts || [];
+      if (!sum(counts)) {
+        showEmptyCanvasMessage(canvas);
+        return;
+      }
+      const perc = buildPercentages(counts);
+
+      new Chart(canvas.getContext("2d"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "% de respondentes",
+            data: perc,
+            backgroundColor: "#38bdf8",
+            borderRadius: 8,
+            maxBarThickness: 36
+          }]
+        },
+        options: {
+          ...chartBaseOptions,
+          scales: {
+            x: {
+              ticks: { color: "#6b7280", font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                color: "#6b7280",
+                callback: v => v + "%"
+              },
+              grid: { color: "#e5e7eb" }
+            }
+          }
+        }
+      });
+    })();
+
+    // Participação nas aulas
+    createDoughnutChart(
+      "chartParticipacaoAulas",
+      perfilData.participacao_aulas?.labels || [],
+      perfilData.participacao_aulas?.counts || [],
+      ["#22c55e", "#facc15", "#f97373", "#60a5fa"]
+    );
+
+    // Interação para tirar dúvidas
+    createDoughnutChart(
+      "chartInteracao",
+      perfilData.interacao_duvidas?.labels || [],
+      perfilData.interacao_duvidas?.counts || [],
+      ["#22c55e", "#facc15", "#f97373"]
+    );
+
+    // Condições
+    createDoughnutChart(
+      "chartCondicoes",
+      perfilData.condicoes.labels || [],
+      perfilData.condicoes.counts || [],
+      ["#f97373", "#34d399", "#fbbf24", "#6366f1"]
+    );
+
+    // Socioemocional
+    createDoughnutChart(
+      "chartSocio",
+      perfilData.socioemocional.labels || [],
+      perfilData.socioemocional.counts || [],
+      ["#34d399", "#f97373", "#fbbf24"]
+    );
+
+    // Material físico (recebeu + impacto numa mesma pizza)
+    (function chartMaterial() {
+      const canvas = document.getElementById("chartMaterial");
+      if (!canvas) return;
+
+      const recebeuLabels = (perfilData.material_fisico?.labels || []).map(l => "Recebimento – " + l);
+      const recebeuCounts = perfilData.material_fisico?.counts || [];
+
+      const impactoLabels = (perfilData.impacto_material?.labels || []).map(l => "Impacto – " + l);
+      const impactoCounts = perfilData.impacto_material?.counts || [];
+
+      const labels = recebeuLabels.concat(impactoLabels);
+      const counts = recebeuCounts.concat(impactoCounts);
+
+      if (!sum(counts)) {
+        showEmptyCanvasMessage(canvas);
+        return;
+      }
+
+      const colors = [
+        "#22c55e", "#f97373", // recebeu / não recebeu
+        "#4ade80", "#60a5fa", "#facc15", "#f97373" // impacto
+      ];
+
+      createDoughnutChart("chartMaterial", labels, counts, colors);
+    })();
+  })();
+
+  /* ========= Insights simples: perfil x desempenho ========= */
+  (function buildInsights() {
+    const box = document.getElementById("insights-container");
+    if (!box) return;
+
+    const insights = [];
+
+    // Autoavaliação geral
+    const dLabels = perfilData.desempenho_geral.labels || [];
+    const dCounts = perfilData.desempenho_geral.counts || [];
+    let abaixo = 0, dentroOuAcima = 0, tot = 0;
+    dLabels.forEach((lab, i) => {
+      const c = toNumber(dCounts[i]);
+      tot += c;
+      const l = String(lab || "").toLowerCase();
+      if (l.includes("abaixo do esperado") || l.includes("muito abaixo")) abaixo += c;
+      else if (
+        l.includes("dentro do esperado") ||
+        l.includes("acima do esperado") ||
+        l.includes("muito acima")
+      ) dentroOuAcima += c;
+    });
+    const pAbaixo = tot ? (abaixo * 100) / tot : null;
+    const pDentro = tot ? (dentroOuAcima * 100) / tot : null;
+    if (pAbaixo != null && pDentro != null) {
+      insights.push({
+        type: pAbaixo > 25 ? "bad" : "good",
+        label: "Equilíbrio de autoavaliação",
+        text:
+          `${nicePercent(pDentro)} se veem dentro ou acima do esperado, ` +
+          `enquanto ${nicePercent(pAbaixo)} se percebem abaixo do esperado.`
+      });
+    }
+
+    // Sono
+    const sLabels = perfilData.sono.labels || [];
+    const sCounts = perfilData.sono.counts || [];
+    let sono7 = 0, sonoTot = 0;
+    sLabels.forEach((lab, i) => {
+      const c = toNumber(sCounts[i]);
+      sonoTot += c;
+      const l = String(lab || "").toLowerCase();
+      if (l.includes("7 a 8h") || l.includes("8h+")) sono7 += c;
+    });
+    const pSono7 = sonoTot ? (sono7 * 100) / sonoTot : null;
+    if (pSono7 != null) {
+      insights.push({
+        type: "warn",
+        label: "Sono e bem-estar",
+        text:
+          `${nicePercent(pSono7)} relatam dormir 7h ou mais por noite. ` +
+          `Manter esse padrão é importante para consolidar o estudo e o desempenho.`
+      });
+    }
+
+    // Estudo extra
+    const eLabels = perfilData.estudo.labels || [];
+    const eCounts = perfilData.estudo.counts || [];
+    let est2 = 0, estTot = 0;
+    eLabels.forEach((lab, i) => {
+      const c = toNumber(eCounts[i]);
+      estTot += c;
+      const l = String(lab || "").toLowerCase();
+      if (l.includes("2 - 4 horas") || l.includes("acima de 4 horas")) est2 += c;
+    });
+    const pEst2 = estTot ? (est2 * 100) / estTot : null;
+    if (pEst2 != null) {
+      insights.push({
+        type: "good",
+        label: "Carga de estudo extraclasse",
+        text:
+          `${nicePercent(pEst2)} conseguem estudar pelo menos 2h/dia além das aulas. ` +
+          `É nesse grupo que tendem a aparecer mais relatos de evolução positiva.`
+      });
+    }
+
+    // Condições de aprendizagem
+    const condLabels = perfilData.condicoes.labels || [];
+    const condCounts = perfilData.condicoes.counts || [];
+    let condSim = 0, condTot = 0;
+    condLabels.forEach((lab, i) => {
+      const c = toNumber(condCounts[i]);
+      condTot += c;
+      const l = String(lab || "").toLowerCase();
+      if (l.includes("ansied") || l.includes("depress") || l.includes("condição") || l.includes("dificuldade"))
+        condSim += c;
+    });
+    const pCond = condTot ? (condSim * 100) / condTot : null;
+    if (pCond != null) {
+      insights.push({
+        type: "warn",
+        label: "Condições de aprendizagem",
+        text:
+          `${nicePercent(pCond)} relatam alguma condição de aprendizagem ` +
+          `(ex.: ansiedade, dificuldades de foco). Isso reforça a necessidade ` +
+          `de estratégias pedagógicas flexíveis e apoio individualizado.`
+      });
+    }
+
+    // Evolução dos simulados (melhorou x piorou)
+    const evLabels = perfilData.evolucao?.labels || [];
+    const evCounts = perfilData.evolucao?.counts || [];
+    let melhorou = 0, piorou = 0, estavel = 0, totEv = 0;
+    evLabels.forEach((lab, i) => {
+      const c = toNumber(evCounts[i]);
+      totEv += c;
+      const l = String(lab || "").toLowerCase();
+      if (l.includes("melhorou")) melhorou += c;
+      else if (l.includes("piorou")) piorou += c;
+      else if (l.includes("estável") || l.includes("permaneceu")) estavel += c;
+    });
+    if (totEv) {
+      const pMel = (melhorou * 100) / totEv;
+      const pPio = (piorou * 100) / totEv;
+      insights.push({
+        type: pMel >= pPio ? "good" : "bad",
+        label: "Evolução nos simulados",
+        text:
+          `${nicePercent(pMel)} relatam melhora ao longo do semestre, ` +
+          `${nicePercent((estavel * 100) / totEv)} se mantiveram estáveis ` +
+          `e ${nicePercent(pPio)} sentiram piora.`
+      });
+    }
+
+    if (!insights.length) {
+      insights.push({
+        type: "good",
+        label: "Aguardando mais respostas",
+        text:
+          "Ainda não há dados suficientes para relacionar perfil social e desempenho. " +
+          "À medida que mais estudantes responderem, os insights aparecerão aqui."
+      });
+    }
+
+    insights.forEach(ins => {
+      const item = document.createElement("div");
+      item.className = "insight-item";
+
+      const badge = document.createElement("div");
+      badge.className = "insight-badge " + ins.type;
+
+      const label = document.createElement("div");
+      label.className = "insight-label";
+      label.textContent = ins.label;
+
+      const text = document.createElement("div");
+      text.className = "insight-text";
+      text.textContent = ins.text;
+
+      item.appendChild(badge);
+      item.appendChild(label);
+      item.appendChild(text);
+      box.appendChild(item);
+    });
+  })();
+</script>
+
+</body>
+</html>
