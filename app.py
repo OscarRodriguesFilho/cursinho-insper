@@ -15,6 +15,7 @@ from pathlib import Path
 # ====== Segurança / .env ======
 from dotenv import load_dotenv
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename  # <<< para salvar upload com nome seguro
 
 load_dotenv()  # carrega variáveis do .env
 
@@ -196,55 +197,48 @@ def debug_uploads():
 @app.route('/')
 @login_required
 def index():
+    # Se você quiser, pode redirecionar direto para o dashboard:
+    # return redirect(url_for('dashboard'))
     return render_template('upload.html')
 
 
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload_file():
+    """
+    Recebe um .xlsx do formulário (campo 'file'),
+    salva na pasta uploads/ e volta para o dashboard
+    para permitir a seleção desse arquivo.
+    """
     if 'file' not in request.files:
-        return 'Nenhum arquivo enviado.', 400
+        flash('Nenhum arquivo enviado.', 'error')
+        return redirect(url_for('dashboard'))
+
     file = request.files['file']
-    if file.filename == '':
-        return 'Nome do arquivo vazio.', 400
 
-    if file and allowed_file(file.filename):
-        filename = file.filename
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+    if not file or file.filename == '':
+        flash('Nome de arquivo vazio.', 'error')
+        return redirect(url_for('dashboard'))
 
-        df = pd.read_excel(filepath)
-        if df.shape[0] < 2:
-            return "Erro: a planilha deve conter ao menos um gabarito e um aluno."
+    if not allowed_file(file.filename):
+        flash('❌ Tipo de arquivo não permitido. Envie um .xlsx.', 'error')
+        return redirect(url_for('dashboard'))
 
-        numero_questoes = df.shape[1]
-        colunas_resposta = df.columns[:numero_questoes]
-        gabarito = df.iloc[0][colunas_resposta]
-        alunos = df.iloc[1:]
+    # Nome seguro
+    filename = secure_filename(file.filename)
 
-        resultados = []
-        for i, aluno in alunos.iterrows():
-            respostas = aluno[colunas_resposta]
-            acertos = (respostas == gabarito).sum()
-            erros = numero_questoes - acertos
-            nota = round((acertos / numero_questoes) * 10, 2)
-            nome = aluno.get('Nome') or aluno.get('nome') or f"Aluno {i}"
-            resultados.append({'nome': nome, 'acertos': acertos, 'erros': erros, 'nota': nota})
+    # Garante que a pasta existe
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-        resultado_df = pd.DataFrame(resultados)
-        resultado_path = os.path.join(app.config['UPLOAD_FOLDER'], GABARITO_FILENAME)
-        resultado_df.to_excel(resultado_path, index=False)
+    save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(save_path)
 
-        with open(os.path.join(UPLOAD_FOLDER, 'último_arquivo.txt'), 'w', encoding='utf-8') as f:
-            f.write(filename)
+    # Registra o último arquivo enviado (se quiser usar em outra rota)
+    with open(os.path.join(UPLOAD_FOLDER, 'último_arquivo.txt'), 'w', encoding='utf-8') as f:
+        f.write(filename)
 
-        return (
-            '✅ Correção concluída. '
-            '<a href="/gabarito">Ver gabarito</a> | '
-            '<a href="/conferir_gabarito">Conferir bolinhas</a>'
-        )
-
-    return '❌ Tipo de arquivo não permitido. Envie um .xlsx.', 400
+    flash(f'✅ Arquivo "{filename}" enviado com sucesso.', 'success')
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/gabarito')
@@ -718,7 +712,7 @@ def upload_marketing_post():
     if not allowed_file_marketing(file.filename):
         return '❌ Tipo de arquivo não permitido. Envie .xlsx ou .xls.', 400
 
-    filename = file.filename
+    filename = secure_filename(file.filename)
     savepath = os.path.join(MARKETING_UPLOAD_FOLDER, filename)
     file.save(savepath)
 
@@ -747,7 +741,7 @@ def dashboard_marketing():
         # arquivo informado não existe mais; volta para escolha
         return redirect(url_for('upload_marketing_page'))
 
-    # --------- A partir daqui mantém sua lógica atual ---------
+    # --------- lógica de análise de marketing ---------
     arquivos = [f for f in os.listdir(uploads_dir) if f.lower().endswith(('.xlsx', '.xls'))]
     df = pd.read_excel(fullpath)
 
@@ -881,7 +875,7 @@ def dashboard_marketing():
         ate_data = ''
 
     return render_template('dashboard_marketing.html',
-                           arquivos=[f for f in os.listdir(uploads_dir) if f.lower().endswith(('.xlsx', '.xls'))],
+                           arquivos=arquivos,
                            arquivo=arquivo,
                            filtros_opts=filtros_opts, sel=sel,
                            charts_payload=charts_payload,

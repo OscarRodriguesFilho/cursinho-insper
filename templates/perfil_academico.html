@@ -410,8 +410,61 @@
 
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
 
+{# ===== NOVA NAVBAR INJETADA AQUI ===== #}
+<style>
+  :root{ --sidebar-w: 260px; }
+
+  .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+  .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+
+  /* Sidebar overlay */
+  .sidebar {
+    width: var(--sidebar-w);
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+  }
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+    backdrop-filter: blur(2px);
+    z-index: 30;
+  }
+  body.sidebar-open .overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .fab-open {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 50;
+    transition: opacity .2s ease;
+  }
+  body.sidebar-open .fab-open {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Estado ativo da nav */
+  .nav-link-active {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+  }
+</style>
+
 <!-- Botão flutuante de abrir menu -->
-<button id="btnOpen" class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
+<button id="btnOpen"
+        class="fab-open focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50"
         aria-label="Abrir menu">
   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
     <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
@@ -421,110 +474,136 @@
 <!-- Overlay -->
 <div class="overlay"></div>
 
-<!-- ===== Sidebar unificada ===== -->
+<!-- Sidebar (NAV UNIFICADA) -->
 <aside class="sidebar fixed inset-y-0 left-0 z-40 border-r border-slate-200 bg-white/95 backdrop-blur">
   <div class="h-full flex flex-col">
-    <!-- Topo -->
     <div class="px-3 py-3 border-b border-slate-200 flex items-center gap-2">
       <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-bold select-none">S</div>
       <div class="flex-1">
-        <div class="text-sm font-semibold leading-5">Simulados</div>
-        <div class="text-[11px] text-slate-500">Painel de perfil</div>
+        <div class="text-sm font-semibold leading-5">Cursinho I</div>
+        <div class="text-[11px] text-slate-500">Simulados &amp; Marketing</div>
       </div>
-      <button id="btnClose" class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Fechar menu">
+      <button id="btnClose"
+        class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
+        aria-label="Fechar menu">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M18.3 5.71L12 12.01l-6.29-6.3-1.42 1.42L10.59 13.4l-6.3 6.29 1.42 1.42L12 14.83l6.29 6.29 1.42-1.42-6.3-6.29 6.3-6.29z"/>
         </svg>
       </button>
     </div>
 
-    <!-- Itens principais -->
     <nav class="flex-1 overflow-y-auto px-2 py-3">
       <ul class="space-y-1">
+        <!-- GERAL -->
+        <li class="px-2 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Geral</li>
         <li>
           <a href="/" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
             <span>Home</span>
           </a>
         </li>
-
         <li>
-          <a href="/perfil_academico" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-3.33 0-10 1.67-10 5v1h20v-1c0-3.33-6.67-5-10-5z"/></svg>
+          <!-- AQUI eu já coloco o link real para /perfil_academico -->
+          <a href="/perfil_academico"
+             class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 11c1.66 0 3-1.57 3-3.5S17.66 4 16 4s-3 1.57-3 3.5S14.34 11 16 11zm-8 0c1.66 0 3-1.57 3-3.5S9.66 4 8 4 5 5.57 5 7.5 6.34 11 8 11zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V20h7v-3.5C24 14.17 19.33 13 16 13z"/>
+            </svg>
             <span>Perfil dos alunos</span>
           </a>
         </li>
 
+        <!-- NOVO ITEM: Ex-alunos -->
         <li>
-          <a href="/dashboard" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-            <span>Relatório vestibulinho</span>
+          <a href="/ex_alunos"
+             class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 7l11 5 9-4.09V17h2V7L12 2zm-6 9.27V15a6 6 0 006 6 6 6 0 006-6v-3.73l-6 2.73-6-2.73z"/>
+            </svg>
+            <span>Ex-alunos</span>
           </a>
         </li>
 
+        <!-- PROVA -->
+        <li class="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Prova</li>
         <li>
-          <a href="/dashboard_marketing" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v16H4zm6 6h4v10h-4zm6-4h4v14h-4z"/></svg>
-            <span>Relatório marketing</span>
+          <a href="/conferir_gabarito" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 15l-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 7z"/>
+            </svg>
+            <span>Conferir Bolinhas</span>
           </a>
         </li>
-
         <li>
           <a href="/respostas" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-2v9H7v2h9l4 4V6zM17 2H3c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-            <span>Respostas</span>
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 6h-2v9H7v2h9l4 4V6zM17 2H3c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+            <span>Respostas por Aluno</span>
+          </a>
+        </li>
+        <li>
+          <a href="/dashboard" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+            </svg>
+            <span>Dashboard (Simulados)</span>
+          </a>
+        </li>
+
+        <!-- MARKETING -->
+        <li class="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Marketing</li>
+        <li>
+          <a href="/dashboard_marketing" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 4h4v16H4zm6 6h4v10h-4zm6-4h4v14h-4z"/>
+            </svg>
+            <span>Dashboard Marketing</span>
           </a>
         </li>
       </ul>
-
-      <!-- Redes sociais -->
-      <div class="mt-6">
-        <div class="px-2 text-[11px] uppercase tracking-wide text-slate-500">Redes</div>
-        <div class="mt-2 grid grid-cols-4 gap-2 px-2">
-          <!-- Site oficial -->
-          <a href="https://cursinhoinsper.org/?utm_source=instagram&utm_medium=post&utm_campaign=voluntarios_alunos&utm_id=0"
-             target="_blank" rel="noopener"
-             class="focus-ring flex items-center justify-center rounded-lg bg-white p-1.5 site-badge"
-             title="Site oficial">
-            <img src="https://cursinhoinsper.org/assets/images/apple-touch-icon.png?v=072e23cf"
-                 alt="Site Cursinho Insper" class="h-6 w-6 object-contain"/>
-          </a>
-
-          <!-- Instagram -->
-          <a href="https://www.instagram.com/cursinho.insper/" target="_blank" rel="noopener"
-             class="focus-ring flex items-center justify-center rounded-lg bg-white p-2 border border-slate-200 hover:bg-slate-50"
-             title="Instagram">
-            <svg class="h-5 w-5 ig" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3a5 5 0 110 10 5 5 0 010-10zm0 2.2a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zM18 6.3a1 1 0 110 2 1 1 0 010-2z"/>
-            </svg>
-          </a>
-
-          <!-- LinkedIn -->
-          <a href="https://www.linkedin.com/company/78313776/admin/dashboard/" target="_blank" rel="noopener"
-             class="focus-ring flex items-center justify-center rounded-lg bg-white p-2 border border-slate-200 hover:bg-slate-50"
-             title="LinkedIn">
-            <svg class="h-5 w-5 li" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.8v2.2h.05c.53-1 1.82-2.2 3.75-2.2 4 0 4.75 2.6 4.75 6V24h-4v-7.2c0-1.72-.03-3.93-2.4-3.93-2.4 0-2.77 1.87-2.77 3.8V24h-4V8z"/>
-            </svg>
-          </a>
-
-          <!-- TikTok -->
-          <a href="https://www.tiktok.com/@cursinho.insper" target="_blank" rel="noopener"
-             class="focus-ring flex items-center justify-center rounded-lg bg-white p-2 border border-slate-200 hover:bg-slate-50"
-             title="TikTok">
-            <svg class="h-5 w-5 tk" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M13.5 2a6.5 6.5 0 006.5 6.5V12a10 10 0 01-6.5-2.3V16a6 6 0 11-6-6c.35 0 .69.03 1.02.1v3.06a3 3 0 102.98 3V2h2z"/>
-            </svg>
-          </a>
-        </div>
-      </div>
     </nav>
 
-    <!-- Rodapé da sidebar -->
+    <!-- Rodapé da sidebar: redes + logout -->
     <div class="mt-auto border-t border-slate-200 px-2 py-3">
-      <a href="/" class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
-        <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/></svg>
-        <span>Voltar ao início</span>
+      <div class="flex items-center justify-between px-1 pb-3">
+        <!-- Site oficial -->
+        <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black bg-white hover:bg-slate-50 shadow-sm transition"
+           href="https://cursinhoinsper.org/?utm_source=instagram&amp;utm_medium=post&amp;utm_campaign=voluntarios_alunos&amp;utm_id=0"
+           target="_blank" rel="noopener noreferrer" title="Site oficial" aria-label="Site oficial">
+          <img src="https://cursinhoinsper.org/assets/images/apple-touch-icon.png?v=072e23cf"
+               alt="Cursinho Insper" class="h-5 w-5 object-contain" />
+        </a>
+        <!-- Instagram -->
+        <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-pink-500 via-fuchsia-500 to-yellow-400 hover:opacity-90 shadow-sm transition"
+           href="https://www.instagram.com/cursinho.insper/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm5 4a5 5 0 100 10 5 5 0 000-10zm6.5.75a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM12 9a3 3 0 110 6 3 3 0 010-6z"/>
+          </svg>
+        </a>
+        <!-- TikTok -->
+        <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-black hover:bg-neutral-800 shadow-sm transition"
+           href="https://www.tiktok.com/@cursinho.insper" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="white" aria-hidden="true">
+            <path d="M168.2 32c8.4 17.7 24.5 31.3 43.8 35.6v35.1c-16.1-.7-31.4-6-44.5-15.1v60.6c0 38.9-31.6 70.5-70.5 70.5S26.5 186.1 26.5 147.2 58.1 76.7 97 76.7c7.2 0 14.2 1.1 20.7 3.2v36.5a35.6 35.6 0 00-20.7-6.5c-20.1 0-36.4 16.3-36.4 36.4s16.3 36.4 36.4 36.4 36.4-16.3 36.4-36.4V32h35.8z"/>
+          </svg>
+        </a>
+        <!-- LinkedIn -->
+        <a class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#0A66C2] hover:bg-[#0857A6] shadow-sm transition"
+           href="https://www.linkedin.com/company/78313776/admin/dashboard/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM0 8.98h5V24H0V8.98zM8.98 8.98H14v2.05h.08c.7-1.33 2.42-2.73 4.98-2.73 5.32 0 6.3 3.5 6.3 8.05V24h-5v-6.65c0-1.58-.03-3.62-2.2-3.62-2.2 0-2.53 1.72-2.53 3.5V24h-5V8.98z"/>
+          </svg>
+        </a>
+      </div>
+
+      <a href="/logout" class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+        <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 17l5-5-5-5v10zM4 4h2v16H4z"/>
+        </svg>
+        <span>Logout</span>
       </a>
     </div>
   </div>
@@ -774,18 +853,7 @@
 
     <!-- GRID 3: dúvidas + insights -->
     <section class="grid-3">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Interação para tirar dúvidas</div>
-          <span class="card-tag">Relação com tutores</span>
-        </div>
-        <div class="card-subtitle">
-          Frequência com que estudantes procuram professores e tutores para esclarecer dúvidas.
-        </div>
-        <div class="chart-shell">
-          <canvas id="chartInteracao"></canvas>
-        </div>
-      </div>
+    
       <div class="card">
         <div class="card-header">
           <div class="card-title">Resumo de perfil & desempenho</div>
@@ -830,34 +898,52 @@
   // Ano no rodapé
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Sidebar overlay
-  const body = document.body;
-  const btnOpen = document.getElementById('btnOpen');
-  const btnClose = document.getElementById('btnClose');
-  const overlay = document.querySelector('.overlay');
-  const toggleSidebar = () => body.classList.toggle('sidebar-open');
-  const closeSidebar = () => body.classList.remove('sidebar-open');
-  btnOpen?.addEventListener('click', toggleSidebar);
-  btnClose?.addEventListener('click', closeSidebar);
-  overlay?.addEventListener('click', closeSidebar);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
-
-  // Marca o item ativo da nav
-  (function markActive(){
-    const path = location.pathname.replace(/\/+$/, '') || '/';
-    document.querySelectorAll('.sidebar a.nav-link').forEach(a => {
-      const href = a.getAttribute('href');
-      if (!href || href.startsWith('http')) return;
-      if ((href === '/' && path === '/') || (href !== '/' && path.startsWith(href))) {
-        a.classList.add('nav-link-active');
+  // ========= HIDRATAR FILTROS A PARTIR DA URL =========
+  (function hydrateFiltersFromQuery(){
+    const params = new URLSearchParams(window.location.search);
+    const map = [
+      ['f-situacao','situacao'],
+      ['f-tipo-escola','tipo_escola'],
+      ['f-turno','turno'],
+      ['f-condicao','condicao'],
+      ['f-socio','socio'],
+    ];
+    map.forEach(([selectId, paramName])=>{
+      const el = document.getElementById(selectId);
+      if (!el) return;
+      const v = params.get(paramName);
+      if (v && Array.from(el.options).some(o => o.value === v)) {
+        el.value = v;
       }
     });
   })();
 
+  // Aplicar filtros: recarrega a página com query string
+  document.getElementById('btnApplyFilters').addEventListener('click', function(){
+    const situacao = document.getElementById('f-situacao').value;
+    const tipoEscola = document.getElementById('f-tipo-escola').value;
+    const turno = document.getElementById('f-turno').value;
+    const condicao = document.getElementById('f-condicao').value;
+    const socio = document.getElementById('f-socio').value;
+
+    const params = new URLSearchParams(window.location.search);
+
+    // Só mantém na URL o que não for "todos"
+    if (situacao === 'todos') params.delete('situacao'); else params.set('situacao', situacao);
+    if (tipoEscola === 'todos') params.delete('tipo_escola'); else params.set('tipo_escola', tipoEscola);
+    if (turno === 'todos') params.delete('turno'); else params.set('turno', turno);
+    if (condicao === 'todos') params.delete('condicao'); else params.set('condicao', condicao);
+    if (socio === 'todos') params.delete('socio'); else params.set('socio', socio);
+
+    const qs = params.toString();
+    const newUrl = window.location.pathname + (qs ? '?' + qs : '');
+    window.location.href = newUrl;
+  });
+
   // ========= DADOS VINDOS DO FLASK =========
-  // Garante que nunca gera "window.perfilData = ;" (que quebra o JS)
-  window.perfilData = {{ (perfil_data or {}) | tojson | safe }};
-  console.log('perfilData carregado do Flask:', window.perfilData);
+  // IMPORTANTE: no Python você deve fazer algo como:
+  // return render_template("perfil_academico.html", perfil_data=perfil_data)
+  window.perfilData = {{ perfil_data | tojson }};
 
   const perfilData = window.perfilData || {
     total_respostas: 0,
@@ -1376,7 +1462,7 @@
       ["#34d399", "#f97373", "#fbbf24"]
     );
 
-    // Material físico (recebeu + impacto numa mesma pizza)
+    // Material físico (recebeu + impacto numa mesma pizza, se você preferir pode juntar no Python)
     (function chartMaterial() {
       const canvas = document.getElementById("chartMaterial");
       if (!canvas) return;
@@ -1397,7 +1483,7 @@
 
       const colors = [
         "#22c55e", "#f97373", // recebeu / não recebeu
-        "#4ade80", "#60a5fa", "#facc15", "#f97373" // impacto
+        "#4ade80", "#60a5fa", "#facc15", "#f97373" // impacto: ajudou muito, ajudou um pouco, não sentiu, atrapalhou etc.
       ];
 
       createDoughnutChart("chartMaterial", labels, counts, colors);
@@ -1559,6 +1645,50 @@
       box.appendChild(item);
     });
   })();
+</script>
+
+<!-- SCRIPT DA NOVA NAVBAR (mantido do partial) -->
+<script>
+  const body = document.body;
+  const btnOpen = document.getElementById('btnOpen');
+  const btnClose = document.getElementById('btnClose');
+  const overlay = document.querySelector('.overlay');
+
+  const closeSidebar = () => body.classList.remove('sidebar-open');
+  const toggleSidebar = () => body.classList.toggle('sidebar-open');
+
+  btnOpen?.addEventListener('click', toggleSidebar);
+  btnClose?.addEventListener('click', closeSidebar);
+  overlay?.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+  // Marca item ativo na nav
+  (function markActive(){
+    const path = location.pathname.replace(/\/+$/, '') || '/';
+    document.querySelectorAll('.nav-link').forEach(a => {
+      const href = a.getAttribute('href');
+      const disabled = a.getAttribute('aria-disabled') === 'true';
+      if (disabled || !href || href.startsWith('http')) return;
+      if ((href === '/' && path === '/') || (href !== '/' && path.startsWith(href))) {
+        a.classList.add('nav-link-active');
+      }
+    });
+  })();
+
+  // ======= ESSA PARTE AQUI É QUE QUEBRAVA TUDO =========
+  // Só faz a validação de .xlsx se o form existir na página
+  const select = document.getElementById('arquivo');
+  const form   = document.getElementById('form-dashboard');
+
+  if (form && select) {
+    form.addEventListener('submit', (e) => {
+      const value = (select.value || '').trim();
+      if (!value.toLowerCase().endsWith('.xlsx')) {
+        e.preventDefault();
+        alert('Selecione um arquivo com extensão .xlsx.');
+      }
+    });
+  }
 </script>
 
 </body>

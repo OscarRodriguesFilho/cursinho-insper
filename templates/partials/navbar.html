@@ -104,6 +104,17 @@
           </a>
         </li>
 
+        <!-- NOVO ITEM: Ex-alunos -->
+        <li>
+          <a href="/ex_alunos"
+             class="nav-link flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-100">
+            <svg class="h-5 w-5 text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 7l11 5 9-4.09V17h2V7L12 2zm-6 9.27V15a6 6 0 006 6 6 6 0 006-6v-3.73l-6 2.73-6-2.73z"/>
+            </svg>
+            <span>Ex-alunos</span>
+          </a>
+        </li>
+
         <!-- PROVA -->
         <li class="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Prova</li>
         <li>
@@ -201,14 +212,24 @@
   overlay?.addEventListener('click', closeSidebar);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
-  // Marca item ativo na nav
+  // Marca item ativo na nav (corrigido para não marcar prefixos "falsos")
   (function markActive(){
     const path = location.pathname.replace(/\/+$/, '') || '/';
     document.querySelectorAll('.nav-link').forEach(a => {
       const href = a.getAttribute('href');
       const disabled = a.getAttribute('aria-disabled') === 'true';
       if (disabled || !href || href.startsWith('http')) return;
-      if ((href === '/' && path === '/') || (href !== '/' && path.startsWith(href))) {
+
+      const normalized = href.replace(/\/+$/, '') || '/';
+
+      // Home: só quando está exatamente na raiz
+      if (normalized === '/') {
+        if (path === '/') a.classList.add('nav-link-active');
+        return;
+      }
+
+      // Outras rotas: igual ou prefixo com barra (ex.: /dashboard ou /dashboard/alguma-coisa)
+      if (path === normalized || path.startsWith(normalized + '/')) {
         a.classList.add('nav-link-active');
       }
     });
