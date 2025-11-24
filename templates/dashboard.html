@@ -12,122 +12,535 @@
   <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root{ --sidebar-w: 260px; }
-    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans' }
-    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
-    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+    :root {
+      --insper-red: #d9270d;
+      --insper-orange: #ff982c;
+      --insper-dark: #0f1339;
+      --insper-blue: #3b64c0;
+      --insper-cream: #fff4d9;
+    }
+    
+    * { 
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f1339 0%, #3b64c0 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: #0f1339;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-    /* (as classes abaixo são usadas pela navbar unificada
-       e/ou por outros componentes da página) */
-    .sidebar { width: var(--sidebar-w); transform: translateX(-100%); transition: transform .25s ease; }
-    body.sidebar-open .sidebar { transform: translateX(0); }
-    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; backdrop-filter: blur(2px); z-index: 30; }
-    body.sidebar-open .overlay { opacity: 1; pointer-events: auto; }
-    .fab-open { position: fixed; top: 1rem; left: 1rem; z-index: 50; transition: opacity .2s ease; }
-    body.sidebar-open .fab-open { opacity: 0; pointer-events: none; }
+    /* Fundo animado com formas */
+    .floating-bg {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: float 8s ease-in-out infinite;
+      pointer-events: none;
+      filter: blur(60px);
+    }
+    
+    .bg-1 { width: 500px; height: 500px; background: #fff; top: -200px; left: -150px; animation-delay: 0s; }
+    .bg-2 { width: 350px; height: 350px; background: #ff982c; bottom: -100px; right: -100px; animation-delay: 2s; }
+    .bg-3 { width: 250px; height: 250px; background: #3b64c0; top: 40%; right: 5%; animation-delay: 4s; }
 
-    /* Tabela */
-    thead th.sticky-head { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(5deg); }
+      66% { transform: translate(-20px, 20px) rotate(-5deg); }
+    }
+
+    /* Cards modernos e profissionais */
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border-radius: 1.25rem;
+      transition: all 0.4s ease;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+      background: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    /* Botões aprimorados */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--insper-red) 0%, #b31f0a 100%);
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #b31f0a 0%, #8f1808 100%);
+      box-shadow: 0 6px 20px rgba(217, 39, 13, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--insper-blue) 0%, #2d55b3 100%);
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #2d55b3 0%, #1e4699 100%);
+      box-shadow: 0 6px 20px rgba(59, 100, 192, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1.5px solid #d1d5db;
+      color: #374151;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+      transform: translateY(-1px);
+    }
+
+    /* Animações sutis */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .animate-in-1 { animation-delay: 0.1s; opacity: 0; }
+    .animate-in-2 { animation-delay: 0.2s; opacity: 0; }
+    .animate-in-3 { animation-delay: 0.3s; opacity: 0; }
+    .animate-in-4 { animation-delay: 0.4s; opacity: 0; }
+
+    /* Header profissional */
+    .page-header {
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* CAIXAS DE SELEÇÃO APERFEIÇOADAS */
+    .select-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    .select-enhanced {
+      appearance: none;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      padding-right: 2.5rem;
+      width: 100%;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .select-enhanced:hover {
+      border-color: #cbd5e1;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .select-enhanced:focus {
+      outline: none;
+      border-color: var(--insper-blue);
+      box-shadow: 0 0 0 3px rgba(59, 100, 192, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: white;
+    }
+    
+    .select-enhanced option {
+      padding: 0.75rem;
+      font-size: 0.875rem;
+      background: white;
+      color: #1e293b;
+    }
+    
+    .select-enhanced option:hover {
+      background: var(--insper-blue);
+      color: white;
+    }
+    
+    .select-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #64748b;
+      transition: all 0.3s ease;
+    }
+    
+    .select-container:hover .select-icon {
+      color: var(--insper-blue);
+    }
+    
+    .select-enhanced:focus + .select-icon {
+      color: var(--insper-blue);
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Label aprimorado */
+    .select-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* KPI Cards */
+    .kpi-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border-left: 4px solid var(--insper-blue);
+      text-align: center;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tabela aprimorada */
+    .table-container {
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-header {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-row:hover {
+      background: #f8fafc;
+    }
 
     /* Carrossel */
-    .carousel-container { display: flex; overflow-x: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
-    .carousel-item { flex: 0 0 100%; scroll-snap-align: start; padding: 0 .25rem; }
+    .carousel-container { 
+      display: flex; 
+      overflow-x: hidden; 
+      scroll-snap-type: x mandatory; 
+      scroll-behavior: smooth; 
+      border-radius: 1rem;
+    }
+    
+    .carousel-item { 
+      flex: 0 0 100%; 
+      scroll-snap-align: start; 
+      padding: 1rem;
+    }
 
-    /* Modais */
-    .modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(2,6,23,.45); backdrop-filter: blur(3px); }
-    .modal-hidden { display: none !important; }
-
-    /* FAB Raposa Smart — círculo, imagem sem cortes */
+    /* FAB Raposa */
     .raposa-fab{
-      position: fixed; right: 1rem; bottom: 1rem; z-index: 60;
-      width: 104px; height: 104px;
-    }
-    @media (max-width: 640px){
-      .raposa-fab{ width: 88px; height: 88px; }
+      position: fixed; 
+      right: 1.5rem; 
+      bottom: 1.5rem; 
+      z-index: 70;
+      width: 80px; 
+      height: 80px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .nav-link{ display:flex; align-items:center; gap:.75rem; padding:.5rem .5rem; border-radius:.75rem; }
-    .nav-link:hover{ background:#f1f5f9; }
-    .nav-link-active { background:#f1f5f9; color:#0f172a; font-weight:600; }
-    .icon{ width:20px; height:20px; }
+    .raposa-fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(2,6,23,.45);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      overflow: hidden;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--insper-blue);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 80;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* Área de acerto */
+    .area-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      text-align: center;
+      border-top: 4px solid;
+    }
+
+    .area-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Badge para respostas */
+    .badge-correct {
+      background: rgba(16, 185, 129, 0.1);
+      color: rgb(6, 95, 70);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-incorrect {
+      background: rgba(239, 68, 68, 0.1);
+      color: rgb(153, 27, 27);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-neutral {
+      background: rgba(245, 158, 11, 0.1);
+      color: rgb(146, 64, 14);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
   </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+<body>
+  <!-- Fundo animado -->
+  <div class="floating-bg bg-1"></div>
+  <div class="floating-bg bg-2"></div>
+  <div class="floating-bg bg-3"></div>
 
   {# === NAVBAR UNIFICADA (nova) === #}
   {% include 'partials/navbar.html' %}
 
   <!-- Conteúdo principal -->
-  <main class="mx-auto max-w-6xl px-6">
-    <div class="pt-8 flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-2xl font-semibold tracking-tight">Dashboard — {{ arquivo }}</h1>
-      <div class="flex items-center gap-2">
-        <button id="btnReport" class="focus-ring inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+  <main class="mx-auto max-w-7xl px-6 pt-20 md:pt-8">
+    <!-- Header -->
+    <div class="page-header animate-in animate-in-1">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h1 class="page-title">Dashboard do Simulado</h1>
+          <p class="page-subtitle">Análise detalhada do desempenho dos alunos</p>
+        </div>
+        <button id="btnReport" class="btn-primary rounded-lg px-4 py-2.5 text-sm flex items-center gap-2 animate-in animate-in-2">
+          <i class="fas fa-file-pdf"></i>
           Gerar relatório
         </button>
       </div>
     </div>
 
     <!-- Filtros: Modalidade + Tipo de aluno -->
-    <form method="POST" class="mt-4 mb-6 inline-flex flex-wrap items-center gap-3">
-      <!-- Modalidade -->
-      <label for="modalidade" class="text-sm font-medium text-slate-700">Modalidade:</label>
-      <select name="modalidade" id="modalidade" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()">
-        <option value="Geral" {% if modalidade_filtro == 'Geral' %}selected{% endif %}>Geral</option>
-        <option value="Presencial" {% if modalidade_filtro == 'Presencial' %}selected{% endif %}>Presencial</option>
-        <option value="Online" {% if modalidade_filtro == 'Online' %}selected{% endif %}>Online</option>
-      </select>
+    <div class="card p-6 mb-6 animate-in animate-in-2">
+      <form method="POST" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <input type="hidden" name="arquivo" value="{{ arquivo }}">
+        
+        <!-- Modalidade -->
+        <div>
+          <label class="select-label">Modalidade</label>
+          <div class="select-container">
+            <select name="modalidade" id="modalidade" class="select-enhanced" onchange="this.form.submit()">
+              <option value="Geral" {% if modalidade_filtro == 'Geral' %}selected{% endif %}>Geral</option>
+              <option value="Presencial" {% if modalidade_filtro == 'Presencial' %}selected{% endif %}>Presencial</option>
+              <option value="Online" {% if modalidade_filtro == 'Online' %}selected{% endif %}>Online</option>
+            </select>
+            <div class="select-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+          </div>
+        </div>
 
-      <!-- Tipo de aluno (condicional) -->
-      {% if has_reman_col %}
-        <label for="tipo_aluno" class="ml-2 text-sm font-medium text-slate-700">Tipo de aluno:</label>
-        <select name="tipo_aluno" id="tipo_aluno" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()" title="Coluna: {{ reman_col_name }}">
-          {% for opt in tipo_aluno_opcoes %}
-            <option value="{{ opt }}" {% if opt == tipo_aluno %}selected{% endif %}>{{ opt }}</option>
-          {% endfor %}
-        </select>
-        <span class="text-[11px] text-slate-500">Baseado em: <span class="font-medium">{{ reman_col_name }}</span></span>
-      {% else %}
-        <span class="text-[11px] text-slate-500">Coluna “Você é aluno remanescente?” não encontrada neste arquivo.</span>
-      {% endif %}
+        <!-- Tipo de aluno (condicional) -->
+        {% if has_reman_col %}
+        <div>
+          <label class="select-label">Tipo de aluno</label>
+          <div class="select-container">
+            <select name="tipo_aluno" id="tipo_aluno" class="select-enhanced" onchange="this.form.submit()" title="Coluna: {{ reman_col_name }}">
+              {% for opt in tipo_aluno_opcoes %}
+                <option value="{{ opt }}" {% if opt == tipo_aluno %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+            <div class="select-icon">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+          </div>
+          <p class="mt-1 text-xs text-slate-500">Baseado em: <span class="font-medium">{{ reman_col_name }}</span></p>
+        </div>
+        {% else %}
+        <div class="md:col-span-2">
+          <p class="text-sm text-slate-600 p-3 bg-slate-50 rounded-lg">
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+            Coluna "Você é aluno remanescente?" não encontrada neste arquivo.
+          </p>
+        </div>
+        {% endif %}
 
-      <input type="hidden" name="arquivo" value="{{ arquivo }}">
-    </form>
+        <div class="lg:col-span-2 flex items-center justify-end">
+          <button type="submit" class="btn-secondary rounded-lg px-4 py-2 text-sm">
+            <i class="fas fa-filter mr-2"></i>
+            Aplicar filtros
+          </button>
+        </div>
+      </form>
+    </div>
 
     <!-- KPIs -->
-    <section class="grid grid-cols-12 gap-4">
-      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Alunos</div><div class="mt-1 text-2xl font-semibold">{{ total_alunos }}</div></div></div>
-      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Questões</div><div class="mt-1 text-2xl font-semibold">{{ total_questoes }}</div></div></div>
-      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Média (0–10)</div><div class="mt-1 text-2xl font-semibold">{{ media_nota }}</div></div></div>
-      <div class="col-span-12 md:col-span-3"><div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div class="text-xs uppercase tracking-wide text-slate-500">Mediana (0–10)</div><div class="mt-1 text-2xl font-semibold">{{ mediana_nota }}</div></div></div>
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-in animate-in-2">
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Alunos</div>
+        <div class="text-3xl font-bold text-slate-900">{{ total_alunos }}</div>
+        <div class="mt-2 text-xs text-slate-500">Total participantes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Questões</div>
+        <div class="text-3xl font-bold text-slate-900">{{ total_questoes }}</div>
+        <div class="mt-2 text-xs text-slate-500">Total de questões</div>
+      </div>
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Média (0–10)</div>
+        <div class="text-3xl font-bold text-slate-900">{{ media_nota }}</div>
+        <div class="mt-2 text-xs text-slate-500">Média da turma</div>
+      </div>
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Mediana (0–10)</div>
+        <div class="text-3xl font-bold text-slate-900">{{ mediana_nota }}</div>
+        <div class="mt-2 text-xs text-slate-500">Mediana da turma</div>
+      </div>
+    </section>
 
+    <!-- Top 10 melhores e piores -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <!-- Top 10 melhores -->
-      <div class="col-span-12 md:col-span-6">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 class="text-base font-semibold text-slate-900">Top 10 melhores</h3>
-          <div class="mt-3 max-h-[360px] overflow-auto rounded-lg border border-slate-200">
+      <div class="card animate-in animate-in-3">
+        <div class="card-header px-6 py-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-trophy text-amber-500"></i>
+            <h3 class="text-lg font-semibold text-slate-900">Top 10 melhores</h3>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="overflow-auto rounded-lg border border-slate-200 max-h-[360px]">
             <table class="w-full text-sm">
               <thead class="bg-slate-50">
                 <tr class="text-slate-600">
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Nome</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Acertos</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Domínio</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Chutes</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Dificuldade</th>
+                  <th class="px-4 py-3 text-left font-medium">Nome</th>
+                  <th class="px-4 py-3 text-left font-medium">Acertos</th>
+                  <th class="px-4 py-3 text-left font-medium">Domínio</th>
+                  <th class="px-4 py-3 text-left font-medium">Chutes</th>
+                  <th class="px-4 py-3 text-left font-medium">Dificuldade</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
                 {% for r in top_melhores %}
-                <tr>
-                  <td class="px-3 py-2">{{ r['Nome completo:'] }}</td>
-                  <td class="px-3 py-2 font-semibold text-emerald-700">{{ r['acertos'] }}</td>
-                  <td class="px-3 py-2">{{ r['O quanto você sente que dominava o conteúdo da avaliação:'] }}</td>
-                  <td class="px-3 py-2">{{ r['De 1 a 5, quantas perguntas você chutou?'] }}</td>
-                  <td class="px-3 py-2">{{ r['Matéria com maior dificuldade:'] }}</td>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-3 font-medium">{{ r['Nome completo:'] }}</td>
+                  <td class="px-4 py-3 font-semibold text-emerald-700">{{ r['acertos'] }}</td>
+                  <td class="px-4 py-3">{{ r['O quanto você sente que dominava o conteúdo da avaliação:'] }}</td>
+                  <td class="px-4 py-3">{{ r['De 1 a 5, quantas perguntas você chutou?'] }}</td>
+                  <td class="px-4 py-3">{{ r['Matéria com maior dificuldade:'] }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -137,270 +550,353 @@
       </div>
 
       <!-- Top 10 piores -->
-      <div class="col-span-12 md:col-span-6">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 class="text-base font-semibold text-slate-900">Top 10 piores</h3>
-          <div class="mt-3 max-h-[360px] overflow-auto rounded-lg border border-slate-200">
+      <div class="card animate-in animate-in-3">
+        <div class="card-header px-6 py-4">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-chart-line text-rose-500"></i>
+            <h3 class="text-lg font-semibold text-slate-900">Top 10 piores</h3>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="overflow-auto rounded-lg border border-slate-200 max-h-[360px]">
             <table class="w-full text-sm">
               <thead class="bg-slate-50">
                 <tr class="text-slate-600">
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Nome</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Acertos</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Domínio</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Chutes</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Dificuldade</th>
+                  <th class="px-4 py-3 text-left font-medium">Nome</th>
+                  <th class="px-4 py-3 text-left font-medium">Acertos</th>
+                  <th class="px-4 py-3 text-left font-medium">Domínio</th>
+                  <th class="px-4 py-3 text-left font-medium">Chutes</th>
+                  <th class="px-4 py-3 text-left font-medium">Dificuldade</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
                 {% for r in top_piores %}
-                <tr>
-                  <td class="px-3 py-2">{{ r['Nome completo:'] }}</td>
-                  <td class="px-3 py-2 font-semibold text-rose-700">{{ r['acertos'] }}</td>
-                  <td class="px-3 py-2">{{ r['O quanto você sente que dominava o conteúdo da avaliação:'] }}</td>
-                  <td class="px-3 py-2">{{ r['De 1 a 5, quantas perguntas você chutou?'] }}</td>
-                  <td class="px-3 py-2">{{ r['Matéria com maior dificuldade:'] }}</td>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-3 font-medium">{{ r['Nome completo:'] }}</td>
+                  <td class="px-4 py-3 font-semibold text-rose-700">{{ r['acertos'] }}</td>
+                  <td class="px-4 py-3">{{ r['O quanto você sente que dominava o conteúdo da avaliação:'] }}</td>
+                  <td class="px-4 py-3">{{ r['De 1 a 5, quantas perguntas você chutou?'] }}</td>
+                  <td class="px-4 py-3">{{ r['Matéria com maior dificuldade:'] }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ranking completo -->
-      <div class="col-span-12">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h3 class="text-base font-semibold text-slate-900">Quanto cada um acertou</h3>
-
-            <div class="flex items-center gap-2">
-              <!-- Busca -->
-              <div class="relative">
-                <input id="searchAluno" type="text" placeholder="Pesquisar aluno..."
-                       class="focus-ring w-64 max-w-[70vw] rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm"
-                       aria-label="Pesquisar por nome do aluno">
-                <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M21 20l-5.6-5.6a7 7 0 10-1.4 1.4L20 21l1-1zM5 10a5 5 0 1110 0A5 5 0 015 10z"/>
-                </svg>
-              </div>
-
-              <!-- Mensagens (abre modal vazio) -->
-              <button id="btnMensagens" class="focus-ring inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12l4-4h14a2 2 0 002-2V6a2 2 0 00-2-2z"/></svg>
-                Mensagens
-              </button>
-            </div>
-          </div>
-
-          <div class="mt-3 max-h-[420px] overflow-auto rounded-lg border border-slate-200">
-            <table class="w-full text-sm" id="rankingTable">
-              <thead class="bg-slate-50">
-                <tr class="text-slate-600">
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Posição</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Nome</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Acertos</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Total</th>
-                  <th class="sticky-head px-3 py-2 text-left font-medium">Nota</th>
-                  <th class="sticky-head px-3 py-2 text-right font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100" id="rankingBody">
-                {% for r in ranking %}
-                {% set email = r.get('Endereço de email') or r.get('Email') %}
-                <tr data-email="{{ email }}" data-nome="{{ r['Nome completo:'] }}">
-                  <td class="px-3 py-2 font-semibold text-slate-700">{{ loop.index }}</td>
-                  <td class="px-3 py-2 whitespace-nowrap">{{ r['Nome completo:'] }}</td>
-                  <td class="px-3 py-2 font-semibold">{{ r['acertos'] }}</td>
-                  <td class="px-3 py-2">{{ r['total'] }}</td>
-                  <td class="px-3 py-2">{{ r['nota'] }}</td>
-                  <td class="px-3 py-2 text-right">
-                    <div class="inline-flex justify-end gap-2">
-                      <!-- Enviar e-mail -->
-                      <button class="focus-ring inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                              title="Enviar e-mail" onclick="openCompose(this)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm-1.4 3L12 12.25 5.4 7h13.2zM20 18H4V8l8 6 8-6v10z"/>
-                        </svg>
-                        Enviar
-                      </button>
-                      <!-- Perfil social -->
-                      <button class="focus-ring inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                              title="Perfil social" onclick="openPerfil(this)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M19 3H5a2 2 0 00-2 2v14l4-4h12a2 2 0 002-2V5a2 2 0 00-2-2zm-8 8a3 3 0 110-6 3 3 0 010 6zm-5 4c0-2 4-3.1 5-3.1s5 1.1 5 3.1v1H6v-1z"/>
-                        </svg>
-                        Perfil social
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="mt-2 text-xs text-slate-500">
-            <span id="resultadoBusca">Mostrando <span id="countVisiveis">{{ ranking|length }}</span> de {{ ranking|length }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- % de acerto por área -->
-      <div class="col-span-12">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 class="text-base font-semibold text-slate-900">% de acerto por área</h3>
-          <div class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {% for a in perc_por_area|sort(attribute='perc', reverse=True) %}
-              {% if a.perc >= 80 %}
-                {% set box = 'bg-emerald-50 border-emerald-200' %}{% set txt = 'text-emerald-700' %}
-              {% elif a.perc >= 50 %}
-                {% set box = 'bg-amber-50 border-amber-200' %}{% set txt = 'text-amber-700' %}
-              {% else %}
-                {% set box = 'bg-rose-50 border-rose-200' %}{% set txt = 'text-rose-700' %}
-              {% endif %}
-            <div class="rounded-xl border {{ box }} px-4 py-3">
-              <div class="text-xs uppercase tracking-wide text-slate-600">{{ a.area }}</div>
-              <div class="mt-1 text-xl font-semibold {{ txt }}">{{ a.perc }}%</div>
-            </div>
-            {% endfor %}
-          </div>
-          <p class="mt-2 text-xs text-slate-500">Cores por faixa: <span class="text-emerald-700 font-medium">≥80%</span>, <span class="text-amber-700 font-medium">50–79%</span>, <span class="text-rose-700 font-medium">&lt;50%</span>.</p>
-        </div>
-      </div>
-
-      <!-- Carrossel de gráficos -->
-      <div class="col-span-12">
-        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 class="text-base font-semibold text-slate-900">Desempenho por área</h3>
-          <div class="mt-3">
-            <div id="carouselArea" class="carousel-container">
-              {% for g in grupos %}
-              <div class="carousel-item">
-                <h4 class="text-sm font-semibold text-slate-800">{{ g.titulo }}</h4>
-                <div class="mt-2"><canvas id="chart_{{ loop.index }}" height="320"></canvas></div>
-                <div class="mt-3 max-h-[300px] overflow-auto rounded-lg border border-slate-200">
-                  <table class="w-full text-sm">
-                    <thead class="bg-slate-50">
-                      <tr class="text-slate-600">
-                        <th class="sticky-head px-3 py-2 text-left font-medium">Questão</th>
-                        <th class="sticky-head px-3 py-2 text-left font-medium">Mais marcados</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                      {% for j in range(g.intervalo[0], g.intervalo[1]) %}
-                      {% set t3 = top3_por_questao[j] %}
-                      <tr>
-                        <td class="px-3 py-2">Q{{ j+1 }}</td>
-                        <td class="px-3 py-2 space-x-2">
-                          {% set correta = t3.correta|string %}
-                          {% for item in t3.top3 %}
-                            {% set alt = item[0]|string %}{% set cnt = item[1] %}
-                            {% if alt == correta %}
-                              <span class="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-800 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
-                            {% elif loop.index == 1 %}
-                              <span class="inline-block rounded-full bg-rose-100 px-2 py-0.5 text-rose-800 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
-                            {% else %}
-                              <span class="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-amber-800 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
-                            {% endif %}
-                          {% endfor %}
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-
-            <div class="mt-3 flex items-center justify-between">
-              <button class="focus-ring inline-flex items-center rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900" onclick="moveSlide(-1)">⬅ Anterior</button>
-              <button class="focus-ring inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="moveSlide(1)">Próxima ➡</button>
-            </div>
-            <p class="mt-2 text-xs text-slate-500 text-center">Atalho: use as setas do teclado (← →) para navegar.</p>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Ranking completo -->
+    <section class="card mb-6 animate-in animate-in-4">
+      <div class="card-header px-6 py-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-list-ol text-blue-500"></i>
+            <h3 class="text-lg font-semibold text-slate-900">Ranking Completo</h3>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Busca -->
+            <div class="relative">
+              <input id="searchAluno" type="text" placeholder="Pesquisar aluno..."
+                     class="rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
+                     aria-label="Pesquisar por nome do aluno">
+              <i class="fas fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            </div>
+
+            <!-- Mensagens -->
+            <button id="btnMensagens" class="btn-secondary rounded-lg px-4 py-2 text-sm flex items-center gap-2">
+              <i class="fas fa-envelope"></i>
+              Mensagens
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="overflow-auto rounded-lg border border-slate-200 max-h-[420px]">
+          <table class="w-full text-sm" id="rankingTable">
+            <thead class="bg-slate-50">
+              <tr class="text-slate-600">
+                <th class="px-4 py-3 text-left font-medium">Posição</th>
+                <th class="px-4 py-3 text-left font-medium">Nome</th>
+                <th class="px-4 py-3 text-left font-medium">Acertos</th>
+                <th class="px-4 py-3 text-left font-medium">Total</th>
+                <th class="px-4 py-3 text-left font-medium">Nota</th>
+                <th class="px-4 py-3 text-right font-medium">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="rankingBody">
+              {% for r in ranking %}
+              {% set email = r.get('Endereço de email') or r.get('Email') %}
+              <tr data-email="{{ email }}" data-nome="{{ r['Nome completo:'] }}" class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-semibold text-slate-700">{{ loop.index }}</td>
+                <td class="px-4 py-3 whitespace-nowrap font-medium">{{ r['Nome completo:'] }}</td>
+                <td class="px-4 py-3 font-semibold">{{ r['acertos'] }}</td>
+                <td class="px-4 py-3">{{ r['total'] }}</td>
+                <td class="px-4 py-3">{{ r['nota'] }}</td>
+                <td class="px-4 py-3 text-right">
+                  <div class="inline-flex justify-end gap-2">
+                    <!-- Enviar e-mail -->
+                    <button class="btn-outline rounded-lg px-3 py-1.5 text-xs flex items-center gap-1"
+                            title="Enviar e-mail" onclick="openCompose(this)">
+                      <i class="fas fa-envelope"></i>
+                      Enviar
+                    </button>
+                    <!-- Perfil social -->
+                    <button class="btn-outline rounded-lg px-3 py-1.5 text-xs flex items-center gap-1"
+                            title="Perfil social" onclick="openPerfil(this)">
+                      <i class="fas fa-user"></i>
+                      Perfil
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3 text-xs text-slate-500">
+          <span id="resultadoBusca">Mostrando <span id="countVisiveis">{{ ranking|length }}</span> de {{ ranking|length }} alunos</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- % de acerto por área -->
+    <section class="card mb-6 animate-in animate-in-4">
+      <div class="card-header px-6 py-4">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-chart-pie text-purple-500"></i>
+          <h3 class="text-lg font-semibold text-slate-900">% de Acerto por Área</h3>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {% for a in perc_por_area|sort(attribute='perc', reverse=True) %}
+            {% if a.perc >= 80 %}
+              {% set color = 'border-emerald-500' %}{% set text = 'text-emerald-700' %}
+            {% elif a.perc >= 50 %}
+              {% set color = 'border-amber-500' %}{% set text = 'text-amber-700' %}
+            {% else %}
+              {% set color = 'border-rose-500' %}{% set text = 'text-rose-700' %}
+            {% endif %}
+          <div class="area-card {{ color }}">
+            <div class="text-xs uppercase tracking-wide text-slate-600 mb-2">{{ a.area }}</div>
+            <div class="text-2xl font-bold {{ text }} mb-1">{{ a.perc }}%</div>
+            <div class="text-xs text-slate-500">Taxa de acerto</div>
+          </div>
+          {% endfor %}
+        </div>
+        <p class="mt-4 text-xs text-slate-500 flex items-center gap-2">
+          <i class="fas fa-info-circle text-blue-500"></i>
+          Cores por faixa: <span class="text-emerald-700 font-medium">≥80%</span>, 
+          <span class="text-amber-700 font-medium">50–79%</span>, 
+          <span class="text-rose-700 font-medium">&lt;50%</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Carrossel de gráficos -->
+    <section class="card animate-in animate-in-4">
+      <div class="card-header px-6 py-4">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-chart-bar text-green-500"></i>
+          <h3 class="text-lg font-semibold text-slate-900">Desempenho por Área</h3>
+        </div>
+      </div>
+      <div class="p-6">
+        <div id="carouselArea" class="carousel-container">
+          {% for g in grupos %}
+          <div class="carousel-item">
+            <h4 class="text-lg font-semibold text-slate-800 mb-4">{{ g.titulo }}</h4>
+            <div class="mb-6"><canvas id="chart_{{ loop.index }}" height="320"></canvas></div>
+            <div class="overflow-auto rounded-lg border border-slate-200 max-h-[300px]">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr class="text-slate-600">
+                    <th class="px-4 py-3 text-left font-medium">Questão</th>
+                    <th class="px-4 py-3 text-left font-medium">Alternativas mais marcadas</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {% for j in range(g.intervalo[0], g.intervalo[1]) %}
+                  {% set t3 = top3_por_questao[j] %}
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3 font-medium">Q{{ j+1 }}</td>
+                    <td class="px-4 py-3 space-x-2">
+                      {% set correta = t3.correta|string %}
+                      {% for item in t3.top3 %}
+                        {% set alt = item[0]|string %}{% set cnt = item[1] %}
+                        {% if alt == correta %}
+                          <span class="badge-correct inline-block rounded-full px-3 py-1 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
+                        {% elif loop.index == 1 %}
+                          <span class="badge-incorrect inline-block rounded-full px-3 py-1 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
+                        {% else %}
+                          <span class="badge-neutral inline-block rounded-full px-3 py-1 text-xs font-medium">{{ alt }} ({{ cnt }})</span>
+                        {% endif %}
+                      {% endfor %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-6 flex items-center justify-between">
+          <button class="btn-outline rounded-lg px-4 py-2.5 text-sm flex items-center gap-2" onclick="moveSlide(-1)">
+            <i class="fas fa-arrow-left"></i>
+            Anterior
+          </button>
+          <button class="btn-primary rounded-lg px-4 py-2.5 text-sm flex items-center gap-2" onclick="moveSlide(1)">
+            Próxima
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+        <p class="mt-3 text-xs text-slate-500 text-center">
+          <i class="fas fa-keyboard mr-1"></i>
+          Atalho: use as setas do teclado (← →) para navegar
+        </p>
+      </div>
+    </section>
   </main>
 
-  <footer class="mx-auto mt-12 max-w-6xl px-6 pb-10 text-center text-xs text-slate-400">
-    © <span id="year"></span> Simulados — Todos os direitos reservados.
+  <footer class="mx-auto mt-12 pb-10 text-center text-sm text-white/70">
+    © <span id="year"></span> Cursinho Insper — Dashboard de Simulados
   </footer>
 
   <!-- FAB Raposa Smart -->
   <button id="btnRaposaFab"
-    class="raposa-fab focus-ring rounded-full border border-slate-200 bg-white p-3 shadow-lg hover:shadow-xl"
+    class="raposa-fab focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     title="Falar com a Raposa Smart" aria-label="Falar com a Raposa Smart">
     <img src="https://cursinhoinsper.org/assets/images/image03.png?v=072e23cf"
          alt="Raposa Smart"
-         class="h-full w-full object-contain" />
+         class="h-full w-full object-contain rounded-full" />
   </button>
 
   <!-- Modal Mensagens -->
-  <div id="composeModal" class="modal-backdrop modal-hidden">
-    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
-      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h3 class="text-base font-semibold text-slate-900">Nova mensagem</h3>
-          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeCompose()">✕</button>
+  <div id="composeModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <h3 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+          <i class="fas fa-envelope text-blue-500"></i>
+          Nova mensagem
+        </h3>
+        <button class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="closeCompose()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="px-6 py-4 space-y-4">
+        <div>
+          <label for="composePara" class="block text-sm font-medium text-slate-600 mb-1">Para</label>
+          <input id="composePara" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="email@exemplo.com">
+          <p id="composeNomeHint" class="mt-1 text-xs text-slate-500"></p>
         </div>
-        <div class="px-4 py-4 space-y-3">
-          <div><label for="composePara" class="block text-xs font-medium text-slate-600">Para</label><input id="composePara" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="email@exemplo.com"><p id="composeNomeHint" class="mt-1 text-[11px] text-slate-500"></p></div>
-          <div><label for="composeAssunto" class="block text-xs font-medium text-slate-600">Assunto</label><input id="composeAssunto" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Assunto da mensagem"></div>
-          <div><label for="composeMsg" class="block text-xs font-medium text-slate-600">Mensagem</label><textarea id="composeMsg" rows="6" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Digite sua mensagem..."></textarea></div>
+        <div>
+          <label for="composeAssunto" class="block text-sm font-medium text-slate-600 mb-1">Assunto</label>
+          <input id="composeAssunto" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Assunto da mensagem">
         </div>
-        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
-          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeCompose()">Cancelar</button>
-          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="sendCompose()">Enviar</button>
+        <div>
+          <label for="composeMsg" class="block text-sm font-medium text-slate-600 mb-1">Mensagem</label>
+          <textarea id="composeMsg" rows="6" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Digite sua mensagem..."></textarea>
         </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-6 py-4">
+        <button class="btn-outline rounded-lg px-4 py-2 text-sm" onclick="closeCompose()">Cancelar</button>
+        <button class="btn-primary rounded-lg px-4 py-2 text-sm flex items-center gap-2" onclick="sendCompose()">
+          <i class="fas fa-paper-plane"></i>
+          Enviar
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Modal Relatório -->
-  <div id="reportModal" class="modal-backdrop modal-hidden">
-    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
-      <div class="w-full sm:max-w-md rounded-2xl border border-slate-200 bg-white shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h3 class="text-base font-semibold text-slate-900">Gerar relatório</h3>
-          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeReport()">✕</button>
+  <div id="reportModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <h3 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+          <i class="fas fa-file-pdf text-red-500"></i>
+          Gerar relatório
+        </h3>
+        <button class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="closeReport()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="px-6 py-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1">Formato</label>
+          <select id="reportFormato" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="pdf">PDF</option>
+            <option value="csv">CSV</option>
+            <option value="xlsx">XLSX</option>
+          </select>
         </div>
-        <div class="px-4 py-4 space-y-4">
-          <div><label class="block text-xs font-medium text-slate-600">Formato</label><select id="reportFormato" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"><option value="pdf">PDF</option><option value="csv">CSV</option><option value="xlsx">XLSX</option></select></div>
-          <div><label class="block text-xs font-medium text-slate-600">Conteúdo</label><div class="mt-2 space-y-2 text-sm text-slate-700"><label class="flex items-center gap-2"><input type="checkbox" id="rResumo" class="rounded border-slate-300" checked> Resumo (KPIs, rankings)</label><label class="flex items-center gap-2"><input type="checkbox" id="rAreas" class="rounded border-slate-300" checked> % de acerto por área</label><label class="flex items-center gap-2"><input type="checkbox" id="rGraficos" class="rounded border-slate-300" checked> Gráficos por área</label></div></div>
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-2">Conteúdo</label>
+          <div class="space-y-2 text-sm text-slate-700">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="rResumo" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" checked> 
+              Resumo (KPIs, rankings)
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="rAreas" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" checked> 
+              % de acerto por área
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="rGraficos" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" checked> 
+              Gráficos por área
+            </label>
+          </div>
         </div>
-        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
-          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeReport()">Cancelar</button>
-          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-900" onclick="generateReport()">Gerar</button>
-        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-6 py-4">
+        <button class="btn-outline rounded-lg px-4 py-2 text-sm" onclick="closeReport()">Cancelar</button>
+        <button class="btn-secondary rounded-lg px-4 py-2 text-sm flex items-center gap-2" onclick="generateReport()">
+          <i class="fas fa-download"></i>
+          Gerar
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Modal Raposa Smart -->
-  <div id="raposaModal" class="modal-backdrop modal-hidden">
-    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
-      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h3 class="text-base font-semibold text-slate-900">Raposa Smart</h3>
-          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeRaposa()">✕</button>
+  <div id="raposaModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <h3 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+          <i class="fas fa-robot text-amber-500"></i>
+          Raposa Smart
+        </h3>
+        <button class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="closeRaposa()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="px-6 py-4 space-y-4">
+        <p class="text-sm text-slate-600">Tire dúvidas sobre os acertos, matérias de maior dificuldade, etc.</p>
+        <div>
+          <label for="raposaPergunta" class="block text-sm font-medium text-slate-600 mb-1">Sua pergunta</label>
+          <textarea id="raposaPergunta" rows="5" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ex.: Quais foram as matérias de maior dificuldade por turma?"></textarea>
         </div>
-        <div class="px-4 py-4 space-y-3">
-          <p class="text-sm text-slate-600">Tire dúvidas sobre os acertos, matérias de maior dificuldade, etc.</p>
-          <div><label for="raposaPergunta" class="block text-xs font-medium text-slate-600">Sua pergunta</label><textarea id="raposaPergunta" rows="5" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Ex.: Quais foram as matérias de maior dificuldade por turma?"></textarea></div>
-        </div>
-        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
-          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeRaposa()">Cancelar</button>
-          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700" onclick="askRaposa()">Enviar pergunta</button>
-        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-6 py-4">
+        <button class="btn-outline rounded-lg px-4 py-2 text-sm" onclick="closeRaposa()">Cancelar</button>
+        <button class="btn-primary rounded-lg px-4 py-2 text-sm flex items-center gap-2" onclick="askRaposa()">
+          <i class="fas fa-paper-plane"></i>
+          Enviar pergunta
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] hidden">
-    <div class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg">Ação concluída!</div>
+  <div id="toast" class="toast hidden">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-check-circle"></i>
+      <span>Ação concluída!</span>
+    </div>
   </div>
 
   <script>
@@ -517,10 +1013,10 @@
       composeAssunto.value = '';
       composeMsg.value = '';
       composeNomeHint.textContent = nome ? `Destinatário: ${nome}` : '';
-      composeModal.classList.remove('modal-hidden');
+      composeModal.classList.remove('hidden');
       (email ? composeAssunto : composePara).focus();
     }
-    window.closeCompose = () => composeModal.classList.add('modal-hidden');
+    window.closeCompose = () => composeModal.classList.add('hidden');
 
     window.sendCompose = () => {
       const payload = {
@@ -557,8 +1053,8 @@
 
     // Relatório
     const reportModal = document.getElementById('reportModal');
-    document.getElementById('btnReport')?.addEventListener('click', () => reportModal.classList.remove('modal-hidden'));
-    window.closeReport = () => reportModal.classList.add('modal-hidden');
+    document.getElementById('btnReport')?.addEventListener('click', () => reportModal.classList.remove('hidden'));
+    window.closeReport = () => reportModal.classList.add('hidden');
     window.generateReport = () => {
       const payload = {
         formato: document.getElementById('reportFormato').value,
@@ -579,10 +1075,10 @@
 
     btnRaposaFab?.addEventListener('click', () => {
       raposaPergunta.value = '';
-      raposaModal.classList.remove('modal-hidden');
+      raposaModal.classList.remove('hidden');
       raposaPergunta.focus();
     });
-    window.closeRaposa = () => raposaModal.classList.add('modal-hidden');
+    window.closeRaposa = () => raposaModal.classList.add('hidden');
     window.askRaposa = () => {
       const pergunta = (raposaPergunta.value || '').trim();
       if (!pergunta){
@@ -602,7 +1098,7 @@
     // Toast
     function showToast(texto){
       const toast = document.getElementById('toast');
-      toast.querySelector('div').textContent = texto || 'OK';
+      toast.querySelector('span').textContent = texto || 'OK';
       toast.classList.remove('hidden');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(() => toast.classList.add('hidden'), 2000);

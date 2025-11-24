@@ -9,12 +9,171 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    * { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial }
-    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
-    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
-    thead th.sticky-head { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
+    :root {
+      --insper-red: #d9270d;
+      --insper-orange: #ff982c;
+      --insper-dark: #0f1339;
+      --insper-blue: #3b64c0;
+      --insper-cream: #fff4d9;
+    }
+    
+    * { 
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f1339 0%, #3b64c0 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: #0f1339;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fundo animado com formas */
+    .floating-bg {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: float 8s ease-in-out infinite;
+      pointer-events: none;
+      filter: blur(60px);
+    }
+    
+    .bg-1 { width: 500px; height: 500px; background: #fff; top: -200px; left: -150px; animation-delay: 0s; }
+    .bg-2 { width: 350px; height: 350px; background: #ff982c; bottom: -100px; right: -100px; animation-delay: 2s; }
+    .bg-3 { width: 250px; height: 250px; background: #3b64c0; top: 40%; right: 5%; animation-delay: 4s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(5deg); }
+      66% { transform: translate(-20px, 20px) rotate(-5deg); }
+    }
+
+    /* Cards modernos e profissionais */
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border-radius: 1.25rem;
+      transition: all 0.4s ease;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+      background: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    /* Botões aprimorados */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--insper-red) 0%, #b31f0a 100%);
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #b31f0a 0%, #8f1808 100%);
+      box-shadow: 0 6px 20px rgba(217, 39, 13, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1.5px solid #d1d5db;
+      color: #374151;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+      transform: translateY(-1px);
+    }
+
+    /* Animações sutis */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .animate-in-1 { animation-delay: 0.1s; opacity: 0; }
+    .animate-in-2 { animation-delay: 0.2s; opacity: 0; }
+    .animate-in-3 { animation-delay: 0.3s; opacity: 0; }
+    .animate-in-4 { animation-delay: 0.4s; opacity: 0; }
+
+    /* Header profissional */
+    .page-header {
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Filtros aprimorados */
+    .filter-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border-radius: 1.25rem;
+      transition: all 0.4s ease;
+    }
 
     /* Carrossel */
     .carousel { display:flex; overflow:hidden; scroll-snap-type:x mandatory; }
@@ -27,175 +186,347 @@
     .preview-img, .preview-video { max-height:420px; width:auto; object-fit:contain; }
     .preview-iframe { width:100%; height:420px; border:0; }
 
-    /* Chips (se precisar futuramente) */
-    .chip{ display:inline-flex; align-items:center; gap:.4rem; padding:.25rem .5rem; background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; border-radius:.5rem; font-size:.7rem; }
-    .chip-gray{ background:#f1f5f9; color:#334155; border-color:#e2e8f0; }
-
-    /* ====== MODAIS + RAPOSA SMART ====== */
-    .modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(2,6,23,.45); backdrop-filter: blur(3px); }
-    .modal-hidden { display: none !important; }
-    .raposa-fab{
-      position: fixed; right: 1rem; bottom: 1rem; z-index: 70;
-      width: 100px; height: 100px;
+    /* Toggle Eficiência / Anotar */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
     }
-    @media (max-width: 640px){
-      .raposa-fab{ width: 84px; height: 84px; }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--insper-blue);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    /* KPI Cards */
+    .kpi-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border-left: 4px solid var(--insper-blue);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tabela aprimorada */
+    .table-container {
+      background: white;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-header {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-row:hover {
+      background: #f8fafc;
+    }
+
+    /* FAB Raposa */
+    .raposa-fab{
+      position: fixed; 
+      right: 1.5rem; 
+      bottom: 1.5rem; 
+      z-index: 70;
+      width: 80px; 
+      height: 80px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .raposa-fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(2,6,23,.45);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      overflow: hidden;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--insper-blue);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 80;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
     }
   </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+
+<body>
+  <!-- Fundo animado -->
+  <div class="floating-bg bg-1"></div>
+  <div class="floating-bg bg-2"></div>
+  <div class="floating-bg bg-3"></div>
 
   {% include 'partials/navbar.html' %}
 
   <!-- Conteúdo principal -->
   <main class="mx-auto max-w-7xl px-6 pt-20 md:pt-8">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-2xl font-semibold tracking-tight"> Análise de marketing da {{ arquivo }}</h1>
+    <!-- Header -->
+    <div class="page-header animate-in animate-in-1">
+      <h1 class="page-title">Dashboard de Marketing</h1>
+      <p class="page-subtitle">Análise completa de desempenho das campanhas</p>
+    </div>
+
+    <!-- Seletor de arquivo -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 animate-in animate-in-1">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-chart-bar text-white"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-white">Análise de marketing da {{ arquivo }}</h2>
+      </div>
       <form method="POST" class="inline-flex items-center gap-2">
-        <select name="arquivo" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" onchange="this.form.submit()">
+        <select name="arquivo" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
           {% for a in arquivos %}<option value="{{ a }}" {% if a == arquivo %}selected{% endif %}>{{ a }}</option>{% endfor %}
         </select>
       </form>
     </div>
 
     <!-- FILTROS -->
-    <section class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <form method="POST" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+    <section class="filter-card p-6 mb-6 animate-in animate-in-2">
+      <form method="POST" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <input type="hidden" name="arquivo" value="{{ arquivo }}">
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Plataforma</label>
-          <select name="plataforma" id="f_plataforma" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="plataforma" id="f_plataforma" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option>Todos</option>
             {% for v in filtros_opts.plataforma %}<option {% if sel.plataforma==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de conteúdo</label>
-          <select name="tipo_conteudo" id="f_tipo_conteudo" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="tipo_conteudo" id="f_tipo_conteudo" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option>Todos</option>
             {% for v in filtros_opts.tipo_conteudo %}<option {% if sel.tipo_conteudo==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Tema do post</label>
-          <select name="tema_post" id="f_tema_post" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="tema_post" id="f_tema_post" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option>Todos</option>
             {% for v in filtros_opts.tema_post %}<option {% if sel.tema_post==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Post Turbinado? (Instagram)</label>
-          <select name="turbinado" id="f_turbinado" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="turbinado" id="f_turbinado" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option>Todos</option>
             {% for v in filtros_opts.turbinado %}<option {% if sel.turbinado==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Público-alvo</label>
-          <select name="publico" id="f_publico" class="focus-ring w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select name="publico" id="f_publico" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option>Todos</option>
             {% for v in filtros_opts.publico %}<option {% if sel.publico==v %}selected{% endif %}>{{ v }}</option>{% endfor %}
           </select>
         </div>
 
-        <div class="md:col-span-3 lg:col-span-5 flex items-center justify-between gap-3">
+        <div class="md:col-span-3 lg:col-span-5 flex items-center justify-between gap-3 pt-2">
           <div class="text-xs text-slate-500">Dados até: <span class="font-medium">{{ ate_data }}</span></div>
-          <button type="submit" class="focus-ring inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">Aplicar filtros</button>
+          <button type="submit" class="btn-primary rounded-lg px-4 py-2 text-sm">Aplicar filtros</button>
         </div>
       </form>
     </section>
 
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-in animate-in-2">
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500">Posts/Reels (filtrados)</div>
+        <div class="mt-1 text-xl font-semibold text-slate-900" id="kpi-posts">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500">Visualizações (mil)</div>
+        <div class="mt-1 text-xl font-semibold text-slate-900" id="kpi-views">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500">Curtidas</div>
+        <div class="mt-1 text-xl font-semibold text-slate-900" id="kpi-likes">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="text-xs uppercase tracking-wide text-slate-500">Comentários</div>
+        <div class="mt-1 text-xl font-semibold text-slate-900" id="kpi-comments">0</div>
+      </div>
+    </div>
+
     <!-- GRÁFICOS / PRÉVIA -->
-    <section class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
       <!-- Coluna esquerda -->
-      <div class="xl:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Métricas por conteúdo (post/reels no eixo X)</h3>
-        <div class="mt-3 h-[420px]"><canvas id="chartPorPost"></canvas></div>
+      <div class="xl:col-span-2 card animate-in animate-in-3">
+        <div class="card-header px-6 py-4">
+          <h3 class="text-lg font-semibold text-slate-900">Métricas por conteúdo</h3>
+        </div>
+        <div class="p-6">
+          <div class="h-[420px]"><canvas id="chartPorPost"></canvas></div>
 
-        <!-- KPIs -->
-        <div id="kpis" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
-        <div id="kpis2" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
-
-        <!-- FUNIL -->
-        <div id="funnelCard" class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div class="flex items-center justify-between">
-            <h4 class="text-sm font-semibold text-slate-900">Funil — Público Alvo → Cliques no Link → Leads → Novos usuários</h4>
-            <div id="funnelMetaInfo" class="text-xs text-slate-600"></div>
-          </div>
-          <div class="mt-3">
-            <svg id="funnelSvg" class="w-full" viewBox="0 0 900 275" preserveAspectRatio="xMidYMid meet"></svg>
+          <!-- FUNIL -->
+          <div id="funnelCard" class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-semibold text-slate-900">Funil — Público Alvo → Cliques no Link → Leads → Novos usuários</h4>
+              <div id="funnelMetaInfo" class="text-xs text-slate-600"></div>
+            </div>
+            <div class="mt-3">
+              <svg id="funnelSvg" class="w-full" viewBox="0 0 900 275" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Coluna direita -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 class="text-base font-semibold text-slate-900">Prévia (carrossel)</h3>
-        <div class="mt-3">
+      <div class="card animate-in animate-in-4">
+        <div class="card-header px-6 py-4">
+          <h3 class="text-lg font-semibold text-slate-900">Prévia (carrossel)</h3>
+        </div>
+        <div class="p-6">
           <div class="relative">
             <div id="carousel" class="carousel rounded-xl border border-slate-200 bg-slate-50"></div>
+            
             <!-- Métricas do slide -->
-            <div class="mt-3 grid grid-cols-3 gap-2 text-sm">
+            <div class="mt-4 grid grid-cols-3 gap-2 text-sm">
               <div class="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-500 mb-1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <i class="fas fa-heart text-rose-500 mb-1"></i>
                 <span id="carouselLikes" class="font-semibold text-slate-900">0</span>
                 <span class="text-[10px] text-slate-500 mt-0.5">curtidas</span>
               </div>
               <div class="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mb-1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <i class="fas fa-comments text-blue-500 mb-1"></i>
                 <span id="carouselInteractions" class="font-semibold text-slate-900">0</span>
                 <span class="text-[10px] text-slate-500 mt-0.5">interações</span>
               </div>
               <div class="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 mb-1" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <i class="fas fa-chart-line text-emerald-500 mb-1"></i>
                 <span id="carouselEfficiency" class="font-semibold text-slate-900">0</span>
                 <span class="text-[10px] text-slate-500 mt-0.5">eficiência</span>
               </div>
             </div>
-            <div class="mt-2 flex items-center justify-between">
-              <button id="prevSlide" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">⬅ Anterior</button>
-              <button id="nextSlide" class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">Próximo ➡</button>
+            
+            <div class="mt-4 flex items-center justify-between">
+              <button id="prevSlide" class="btn-outline rounded-lg px-3 py-1.5 text-sm">⬅ Anterior</button>
+              <button id="nextSlide" class="btn-outline rounded-lg px-3 py-1.5 text-sm">Próximo ➡</button>
             </div>
 
-            <!-- Toggle Eficiência / Anotar (bolinha on/off) -->
-            <div class="mt-3 flex items-center">
-              <div class="inline-flex items-center gap-2">
-                <button id="toggleNote" role="switch" aria-checked="false"
-                        class="relative h-6 w-11 rounded-full bg-slate-300 transition-colors focus-ring">
-                  <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform translate-x-0"></span>
-                </button>
-                <span class="text-xs text-slate-500">Anotar</span>
+            <!-- Toggle Eficiência / Anotar -->
+            <div class="mt-4 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <label class="toggle-switch">
+                  <input id="toggleNote" type="checkbox">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="text-sm text-slate-600">Modo anotação</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="mt-6 flex items-center justify-between">
-          <h3 id="effNoteTitle" class="text-base font-semibold text-slate-900">Eficiência (escala 0–100, barras horizontais)</h3>
-        </div>
+          <div class="mt-6">
+            <h3 id="effNoteTitle" class="text-base font-semibold text-slate-900 mb-3">Eficiência (escala 0–100, barras horizontais)</h3>
 
-        <!-- Área alternável -->
-        <div class="mt-3 h-[320px]">
-          <!-- Vista Gráfico -->
-          <div id="effView" class="h-full">
-            <canvas id="chartEff"></canvas>
-            <p class="mt-1 text-[11px] text-slate-500">Eixo Y: datas. Visualizações/curtidas corrigidas (÷10). Visualizações entram ÷10.000 na eficiência.</p>
-          </div>
-          <!-- Vista Anotação -->
-          <div id="noteView" class="h-full hidden">
-            <div class="h-full flex flex-col">
-              <textarea id="noteText"
-                        class="focus-ring flex-1 min-h-[340px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                        placeholder="Escreva sua anotação sobre o item atual do carrossel/tabela…"></textarea>
-              <div class="mt-2 flex items-center justify-end">
-                <button id="btnSaveNote"
-                        class="focus-ring inline-flex items-center justify-center rounded-full bg-blue-600 p-2 text-white hover:bg-blue-700"
-                        aria-label="Salvar anotação" title="Salvar anotação">
-                  <!-- Ícone disquete -->
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a1 1 0 0 0 .71-.29l2-2A1 1 0 0 0 22 18V7a4 4 0 0 0-1.17-2.83l-1-1A4 4 0 0 0 17 3Zm-2 2v4H7V5Zm5 14H5V5h0v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V5h0a2 2 0 0 1 1.41.59l1 1A2 2 0 0 1 21 7v11Z"/>
-                  </svg>
-                </button>
+            <!-- Área alternável -->
+            <div class="h-[320px]">
+              <!-- Vista Gráfico -->
+              <div id="effView" class="h-full">
+                <canvas id="chartEff"></canvas>
+                <p class="mt-2 text-xs text-slate-500">Eixo Y: datas. Visualizações/curtidas corrigidas (÷10). Visualizações entram ÷10.000 na eficiência.</p>
+              </div>
+              
+              <!-- Vista Anotação -->
+              <div id="noteView" class="h-full hidden">
+                <div class="h-full flex flex-col">
+                  <textarea id="noteText"
+                            class="flex-1 min-h-[340px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Escreva sua anotação sobre o item atual do carrossel/tabela…"></textarea>
+                  <div class="mt-2 flex items-center justify-end">
+                    <button id="btnSaveNote"
+                            class="btn-primary rounded-lg px-4 py-2 text-sm flex items-center gap-2"
+                            aria-label="Salvar anotação" title="Salvar anotação">
+                      <i class="fas fa-save"></i>
+                      <span>Salvar anotação</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -204,142 +535,160 @@
     </section>
 
     <!-- TABELA + PRÉVIA -->
-    <section class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div class="lg:col-span-9 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <h3 class="text-base font-semibold text-slate-900">Tabela de Posts</h3>
-          <div id="contagem" class="text-xs text-slate-500"></div>
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+      <div class="lg:col-span-9 card animate-in animate-in-3">
+        <div class="card-header px-6 py-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-lg font-semibold text-slate-900">Tabela de Posts</h3>
+            <div id="contagem" class="text-xs text-slate-500"></div>
+          </div>
         </div>
-        <div class="relative w-full md:w-1/2 mt-2">
-          <input id="busca" type="text" placeholder="Pesquisar em todas as colunas…" class="focus-ring w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><path d="M21 20l-5.6-5.6a7 7 0 10-1.4 1.4L20 21l1-1zM5 10a5 5 0 1110 0A5 5 0 015 10z"/></svg>
-        </div>
-        <div class="mt-3 overflow-x-auto">
-          <table id="tabelaPosts" class="min-w-[1100px] w-full text-sm">
-            <thead class="bg-slate-50 text-slate-600">
-              <tr>
-                {% if tabela|length > 0 %}
-                  {% set keys = tabela[0].keys()|list %}
-                  {% for k in keys %}
-                    {% if k != 'Imagem' and k != 'link' %}
-                      <th class="sticky-head px-3 py-2 text-left font-medium">{{ k }}</th>
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              {% if tabela|length > 0 %}
-                {% set keys = tabela[0].keys()|list %}
-                {% for row in tabela %}
-                  <tr class="hover:bg-slate-50 cursor-pointer select-none" role="button" tabindex="0"
-                      data-img="{{ row.get('link','')|e }}">
+        <div class="p-6">
+          <div class="relative w-full md:w-1/2 mb-4">
+            <input id="busca" type="text" placeholder="Pesquisar em todas as colunas…" class="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <i class="fas fa-search pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="tabelaPosts" class="min-w-[1100px] w-full text-sm">
+              <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                  {% if tabela|length > 0 %}
+                    {% set keys = tabela[0].keys()|list %}
                     {% for k in keys %}
                       {% if k != 'Imagem' and k != 'link' %}
-                        <td class="px-3 py-2">{{ row.get(k,'') }}</td>
+                        <th class="px-4 py-3 text-left font-medium">{{ k }}</th>
                       {% endif %}
                     {% endfor %}
-                  </tr>
-                {% endfor %}
-              {% endif %}
-            </tbody>
-          </table>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% if tabela|length > 0 %}
+                  {% set keys = tabela[0].keys()|list %}
+                  {% for row in tabela %}
+                    <tr class="hover:bg-slate-50 cursor-pointer select-none" role="button" tabindex="0"
+                        data-img="{{ row.get('link','')|e }}">
+                      {% for k in keys %}
+                        {% if k != 'Imagem' and k != 'link' %}
+                          <td class="px-4 py-3">{{ row.get(k,'') }}</td>
+                        {% endif %}
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div class="lg:col-span-3">
-        <div class="sticky top-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 class="text-base font-semibold text-slate-900">Prévia (tabela)</h3>
-          <div class="mt-3 w-full overflow-hidden rounded-xl preview-media-wrap">
-            <div id="previewMedia" class="w-full flex justify-center items-center">
-              <img class="preview-img" alt="Prévia do post"
-                   src="data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22&gt;&lt;rect width=%22400%22 height=%22300%22 fill=%22%23f1f5f9%22/&gt;&lt;text x=%22200%22 y=%22160%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%2394a3b8%22&gt;Prévia indisponível&lt;/text&gt;&lt;/svg%3E">
-            </div>
+      <div class="lg:col-span-3 animate-in animate-in-4">
+        <div class="card sticky top-6">
+          <div class="card-header px-6 py-4">
+            <h3 class="text-lg font-semibold text-slate-900">Prévia (tabela)</h3>
           </div>
-          <p class="mt-2 text-xs text-slate-500">Clique numa linha para atualizar as prévias.</p>
+          <div class="p-6">
+            <div class="w-full overflow-hidden rounded-xl preview-media-wrap">
+              <div id="previewMedia" class="w-full flex justify-center items-center">
+                <img class="preview-img" alt="Prévia do post"
+                     src="data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22&gt;&lt;rect width=%22400%22 height=%22300%22 fill=%22%23f1f5f9%22/&gt;&lt;text x=%22200%22 y=%22160%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%2394a3b8%22&gt;Prévia indisponível&lt;/text&gt;&lt;/svg%3E">
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Clique numa linha para atualizar as prévias.</p>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ESTATÍSTICA -->
-    <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h3 class="text-base font-semibold text-slate-900">Tabela de Estatística (Resumo de Métricas)</h3>
-      <div class="mt-3 overflow-x-auto">
-        <table class="min-w[900px] w-full text-sm">
-          <thead class="bg-slate-50 text-slate-600">
-            <tr>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Métrica</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Média</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Desvio Padrão</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Variação %</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Máx</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Mín</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Q1</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Mediana</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Q3</th>
-              <th class="sticky-head px-3 py-2 text-left font-medium">Variância</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            {% for nome, vals in metrics_table.items() %}
-            <tr>
-              <td class="px-3 py-2 font-medium text-slate-800">{{ nome }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Média']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Desvio Padrão']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Variação Percentual']) }}%</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Máximo']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Mínimo']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Q1']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Mediana']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Q3']) }}</td>
-              <td class="px-3 py-2">{{ '%.2f'|format(vals['Variância']) }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <section class="card animate-in animate-in-4">
+      <div class="card-header px-6 py-4">
+        <h3 class="text-lg font-semibold text-slate-900">Tabela de Estatística (Resumo de Métricas)</h3>
+      </div>
+      <div class="p-6">
+        <div class="overflow-x-auto">
+          <table class="min-w[900px] w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium">Métrica</th>
+                <th class="px-4 py-3 text-left font-medium">Média</th>
+                <th class="px-4 py-3 text-left font-medium">Desvio Padrão</th>
+                <th class="px-4 py-3 text-left font-medium">Variação %</th>
+                <th class="px-4 py-3 text-left font-medium">Máx</th>
+                <th class="px-4 py-3 text-left font-medium">Mín</th>
+                <th class="px-4 py-3 text-left font-medium">Q1</th>
+                <th class="px-4 py-3 text-left font-medium">Mediana</th>
+                <th class="px-4 py-3 text-left font-medium">Q3</th>
+                <th class="px-4 py-3 text-left font-medium">Variância</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for nome, vals in metrics_table.items() %}
+              <tr>
+                <td class="px-4 py-3 font-medium text-slate-800">{{ nome }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Média']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Desvio Padrão']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Variação Percentual']) }}%</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Máximo']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Mínimo']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Q1']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Mediana']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Q3']) }}</td>
+                <td class="px-4 py-3">{{ '%.2f'|format(vals['Variância']) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
-    <footer class="mx-auto mt-12 max-w-7xl pb-10 text-center text-xs text-slate-400">
-      © <span id="year"></span> Marketing — Todos os direitos reservados.
+    <footer class="mx-auto mt-12 pb-10 text-center text-sm text-white/70">
+      © <span id="year"></span> Cursinho Insper — Marketing Dashboard
     </footer>
   </main>
 
   <!-- ===== FAB Raposa Smart ===== -->
   <button id="btnRaposaFab"
-    class="raposa-fab focus-ring rounded-full border border-slate-200 bg-white p-3 shadow-lg hover:shadow-xl"
+    class="raposa-fab focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     title="Falar com a Raposa Smart" aria-label="Falar com a Raposa Smart">
     <img src="https://cursinhoinsper.org/assets/images/image03.png?v=072e23cf"
          alt="Raposa Smart"
-         class="h-full w-full object-contain" />
+         class="h-full w-full object-contain rounded-full" />
   </button>
 
   <!-- ===== Modal Raposa Smart ===== -->
-  <div id="raposaModal" class="modal-backdrop modal-hidden">
-    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
-      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h3 class="text-base font-semibold text-slate-900">Raposa Smart</h3>
-          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50" onclick="closeRaposa()">✕</button>
+  <div id="raposaModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <h3 class="text-lg font-semibold text-slate-900">Raposa Smart</h3>
+        <button class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="closeRaposa()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="px-6 py-4 space-y-4">
+        <p class="text-sm text-slate-600">Faça perguntas sobre desempenho das publicações, funil e KPIs.</p>
+        <div>
+          <label for="raposaPergunta" class="block text-xs font-medium text-slate-600 mb-1">Sua pergunta</label>
+          <textarea id="raposaPergunta" rows="5" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ex.: Quais posts com eficiência &gt; 80% tiveram mais salvamentos?"></textarea>
         </div>
-        <div class="px-4 py-4 space-y-3">
-          <p class="text-sm text-slate-600">Faça perguntas sobre desempenho das publicações, funil e KPIs.</p>
-          <div>
-            <label for="raposaPergunta" class="block text-xs font-medium text-slate-600">Sua pergunta</label>
-            <textarea id="raposaPergunta" rows="5" class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="Ex.: Quais posts com eficiência &gt; 80% tiveram mais salvamentos?"></textarea>
-          </div>
-        </div>
-        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
-          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onclick="closeRaposa()">Cancelar</button>
-          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700" onclick="askRaposa()">Enviar pergunta</button>
-        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-6 py-4">
+        <button class="btn-outline rounded-lg px-4 py-2 text-sm" onclick="closeRaposa()">Cancelar</button>
+        <button class="btn-primary rounded-lg px-4 py-2 text-sm flex items-center gap-2" onclick="askRaposa()">
+          <i class="fas fa-paper-plane"></i>
+          Enviar pergunta
+        </button>
       </div>
     </div>
   </div>
 
   <!-- ===== Toast ===== -->
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] hidden">
-    <div class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg">Ação concluída!</div>
+  <div id="toast" class="toast hidden">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-check-circle"></i>
+      <span>Ação concluída!</span>
+    </div>
   </div>
 
   <script>
@@ -485,30 +834,11 @@
       const viewsK = (payload.views||[]).map(v => Math.round(((+v||0)/1000)*100)/100);
       const sum = (a)=> (a||[]).reduce((x,y)=> x + (+y||0), 0);
 
-      const k1 = {
-        'Posts/Reels (filtrados)': labels.length,
-        'Visualizações (mil)': viewsK.reduce((x,y)=>x+y,0).toFixed(2),
-        'Curtidas': sum(payload.curtidas),
-        'Comentários': sum(payload.comentarios)
-      };
-      const k2 = {
-        'Compart.': sum(payload.compart),
-        'Salvamentos': sum(payload.salvamentos),
-        'Cliques Perfil': sum(payload.cliques_perfil),
-        'Cliques Link': sum(payload.cliques_link)
-      };
-      function paintKPIs(elId, dataMap){
-        const el = document.getElementById(elId);
-        if (!el) return;
-        el.innerHTML = Object.entries(dataMap).map(([k,v])=>`
-          <div class="rounded-xl border border-slate-200 bg-white px-3 py-3">
-            <div class="text-[11px] uppercase tracking-wide text-slate-500">${k}</div>
-            <div class="mt-1 text-xl font-semibold text-slate-900">${Number.isFinite(+v)? Number(v).toLocaleString('pt-BR') : v}</div>
-          </div>
-        `).join('');
-      }
-      paintKPIs('kpis', k1);
-      paintKPIs('kpis2', k2);
+      // Atualizar KPIs
+      document.getElementById('kpi-posts').textContent = labels.length.toLocaleString('pt-BR');
+      document.getElementById('kpi-views').textContent = viewsK.reduce((x,y)=>x+y,0).toFixed(2);
+      document.getElementById('kpi-likes').textContent = sum(payload.curtidas).toLocaleString('pt-BR');
+      document.getElementById('kpi-comments').textContent = sum(payload.comentarios).toLocaleString('pt-BR');
 
       const el = document.getElementById('chartPorPost');
       if(!el) return;
@@ -780,7 +1110,7 @@
       }
     };
 
-    // --- Toggle (bolinha) Eficiência / Anotar ---
+    // --- Toggle Eficiência / Anotar ---
     (function setupToggle(){
       const btnToggle = document.getElementById('toggleNote');
       const effView = document.getElementById('effView');
@@ -792,24 +1122,17 @@
           effView.classList.add('hidden');
           noteView.classList.remove('hidden');
           titleEl.textContent = 'Comentários';
-          btnToggle.setAttribute('aria-checked','true');
-          btnToggle.classList.remove('bg-slate-300'); btnToggle.classList.add('bg-blue-600');
-          const knob = btnToggle.querySelector('span');
-          knob.style.transform = 'translateX(20px)';
+          btnToggle.checked = true;
         }else{
           noteView.classList.add('hidden');
           effView.classList.remove('hidden');
           titleEl.textContent = 'Eficiência (escala 0–100, barras horizontais)';
-          btnToggle.setAttribute('aria-checked','false');
-          btnToggle.classList.add('bg-slate-300'); btnToggle.classList.remove('bg-blue-600');
-          const knob = btnToggle.querySelector('span');
-          knob.style.transform = 'translateX(0)';
+          btnToggle.checked = false;
         }
       }
       setMode(false);
-      btnToggle?.addEventListener('click', ()=>{
-        const on = btnToggle.getAttribute('aria-checked') === 'true';
-        setMode(!on);
+      btnToggle?.addEventListener('change', ()=>{
+        setMode(btnToggle.checked);
       });
 
       // Salvar anotação do item atual
@@ -837,16 +1160,16 @@
 
     btnRaposaFab?.addEventListener('click', () => {
       raposaPergunta.value = '';
-      raposaModal.classList.remove('modal-hidden');
+      raposaModal.classList.remove('hidden');
       raposaPergunta.focus();
     });
-    window.closeRaposa = () => raposaModal.classList.add('modal-hidden');
+    window.closeRaposa = () => raposaModal.classList.add('hidden');
 
     function readKpisSnapshot() {
       // tenta ler os KPIs já renderizados
       const map = {};
-      document.querySelectorAll('#kpis > div, #kpis2 > div').forEach(card=>{
-        const key = card.querySelector('div.text-[11px]')?.textContent?.trim();
+      document.querySelectorAll('.kpi-card').forEach(card=>{
+        const key = card.querySelector('.text-xs')?.textContent?.trim();
         const val = card.querySelector('.text-xl')?.textContent?.trim();
         if(key) map[key] = val || '';
       });
@@ -892,7 +1215,7 @@
     // Toast
     function showToast(texto){
       const toast = document.getElementById('toast');
-      toast.querySelector('div').textContent = texto || 'OK';
+      toast.querySelector('span').textContent = texto || 'OK';
       toast.classList.remove('hidden');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(() => toast.classList.add('hidden'), 2000);

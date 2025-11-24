@@ -1,60 +1,228 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <meta charset="UTF-8" />
   <title>Login • Cursinho Insper</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body { background: #f6f7fb; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f1339 0%, #3b64c0 40%, #ff982c 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      color: #111;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Elementos decorativos */
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .shape-1 { width: 300px; height: 300px; top: -100px; left: -100px; background: #fff; }
+    .shape-2 { width: 200px; height: 200px; bottom: -50px; right: -50px; background: #ff982c; }
+    .shape-3 { width: 150px; height: 150px; top: 40%; right: 10%; background: #3b64c0; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+    }
+
+    .input-field {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      transition: all 0.25s ease;
+      font-size: 0.95rem;
+    }
+
+    .input-field:hover {
+      border-color: #cbd5e0;
+      background: #fff;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #3b64c0;
+      box-shadow: 0 0 0 4px rgba(59, 100, 192, 0.15);
+      background: #fff;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #d9270d 0%, #c22310 100%);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #b31f0a 0%, #a01d08 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(217, 39, 13, 0.3);
+    }
+
+    .logo-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .logo-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(59, 100, 192, 0.15) 0%, rgba(255, 152, 44, 0.15) 100%);
+      filter: blur(12px);
+      z-index: 0;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.6; }
+    }
+
+    .logo-img {
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 4px 15px rgba(59, 100, 192, 0.3));
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.7s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .link-hover {
+      position: relative;
+      display: inline-block;
+    }
+
+    .link-hover::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #3b64c0;
+      transition: width 0.3s ease;
+    }
+
+    .link-hover:hover::after {
+      width: 100%;
+    }
+
+    .decorative-dots {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .dot:hover {
+      transform: scale(1.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center px-4">
-  
-  <div class="w-full max-w-md">
-    <div class="bg-white rounded-2xl shadow-xl p-8">
-      <h1 class="text-2xl font-bold text-gray-900 mb-6">Entrar</h1>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="mb-4 space-y-2">
-            {% for category, msg in messages %}
-              <div class="text-sm px-3 py-2 rounded-lg
-                          {% if category=='error' %} bg-red-50 text-red-700 border border-red-200
-                          {% elif category=='success' %} bg-green-50 text-green-700 border border-green-200
-                          {% else %} bg-gray-50 text-gray-700 border border-gray-200 {% endif %}">
-                {{ msg }}
-              </div>
-            {% endfor %}
+<body>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+  <div class="floating-shape shape-3"></div>
+
+  <div class="w-full max-w-md fade-in" style="animation-delay: 0.1s;">
+    <!-- Card -->
+    <div class="card p-10">
+      <!-- Logo dentro do card -->
+      <div class="flex justify-center mb-8">
+        <div class="flex flex-col items-center">
+          <div class="logo-container">
+            <div class="logo-bg"></div>
+            <img src="{{ url_for('static', filename='assets/logo.png') }}" 
+                 alt="Cursinho Insper" 
+                 class="logo-img h-20 mb-2">
           </div>
-        {% endif %}
-      {% endwith %}
+          <p class="text-xs text-gray-600 tracking-wide mt-2 font-medium uppercase">Preparação para o vestibular</p>
+        </div>
+      </div>
 
-      <form method="POST" action="{{ url_for('login', **request.args) }}" class="space-y-4">
+      <h1 class="text-3xl font-bold text-gray-800 text-center mb-2">Bem-vindo de volta!</h1>
+      <p class="text-center text-gray-500 text-sm mb-8">Entre com suas credenciais para continuar</p>
+
+      <form method="POST" action="#" class="space-y-5">
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+          <label for="email" class="block text-sm text-gray-700 mb-2">E-mail</label>
           <input id="email" name="email" type="email" required
-                 class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                 class="w-full rounded-xl input-field px-4 py-3 text-gray-800 placeholder-gray-400"
                  placeholder="seu@email.com" autofocus>
         </div>
+
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+          <label for="password" class="block text-sm text-gray-700 mb-2">Senha</label>
           <input id="password" name="password" type="password" required
-                 class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                 class="w-full rounded-xl input-field px-4 py-3 text-gray-800 placeholder-gray-400"
                  placeholder="••••••••">
         </div>
+
         <button type="submit"
-                class="w-full bg-gray-900 hover:bg-black text-white font-semibold rounded-lg py-2.5">
-          Acessar
+                class="w-full btn-primary text-white font-semibold rounded-xl py-3.5 shadow-lg hover:shadow-xl mt-6">
+          Entrar
         </button>
       </form>
 
-     
+      <div class="mt-6 text-center">
+        <a href="#" class="text-sm text-[#3b64c0] hover:text-[#0f1339] transition duration-200 link-hover font-medium">
+          Esqueceu sua senha?
+        </a>
+      </div>
+    </div>
+
+    <!-- Elementos decorativos -->
+    <div class="mt-12 decorative-dots">
+      <div class="dot bg-[#d9270d]"></div>
+      <div class="dot bg-[#ff982c]"></div>
+      <div class="dot bg-[#3b64c0]"></div>
+      <div class="dot bg-[#0f1339]"></div>
     </div>
   </div>
 </body>
