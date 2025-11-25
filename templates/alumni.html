@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel de Alumni</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
+    }
+
+    .focus-ring { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus-ring:focus { box-shadow: 0 0 0 4px rgba(59,130,246,.35); }
+
+    .contact-btn.no-contact svg {
+      opacity: .25;
+      filter: grayscale(1);
+    }
+    .contact-btn.no-contact::after {
+      content: "✕";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #b91c1c;
+    }
+
+    .bubble-out {
+      align-self: flex-end;
+      background: #2563eb;
+      color: white;
+    }
+    .bubble-in {
+      align-self: flex-start;
+      background: #e5e7eb;
+      color: #0f172a;
+    }
+
+    .checkbox-large {
+      width: 1.1rem;
+      height: 1.1rem;
+      border-width: 2px;
+      border-radius: 0.35rem;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    /* Linha marcada para contato (fica verde) */
+    .row-contacted {
+      background-color: #ecfdf3;
+    }
+    .row-contacted:hover {
+      background-color: #dcfce7;
+    }
+
+    /* Menu de ícones */
+    .menu-icon {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .3rem;
+      padding: .45rem .9rem;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: .7rem;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .menu-icon svg {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+    .menu-icon.active {
+      background: #0f172a;
+      color: #f9fafb;
+      border-color: #0f172a;
+      box-shadow: 0 8px 18px rgba(15,23,42,.25);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(15,23,42,0.40);
+      backdrop-filter: blur(3px);
+    }
+    .modal-hidden { display: none !important; }
+
+    /* FAB Raposa Smart */
+    .raposa-fab {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 70;
+      width: 100px;
+      height: 100px;
+    }
+    @media (max-width: 640px){
+      .raposa-fab{ width: 84px; height: 84px; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900">
+
+  {% include 'partials/navbar.html' %}
+
+  <script>
+    window.peopleData = {{ people | tojson | safe }};
+  </script>
+
+  <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight">Painel de Alumni</h1>
+        <p class="text-sm text-slate-500">
+          Visão geral dos ex-alunos, contatos, trajetória e histórico de conversas.
+        </p>
+      </div>
+    </header>
+
+    <!-- KPIs -->
+    <section id="kpiCards" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- preenchido via JS -->
+    </section>
+
+    <!-- Menu de ícones -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3">
+  
+      <div id="menuIconBar" class="flex flex-wrap gap-2">
+        <button class="menu-icon" data-menu="top5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l2.39 4.85 5.35.78-3.87 3.77.91 5.33L12 14.9l-4.78 2.51.91-5.33L4.26 7.63l5.35-.78L12 2z"/>
+          </svg>
+          <span>Top 5</span>
+        </button>
+
+        <button class="menu-icon" data-menu="cargos">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 7h16v4H4z" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M7 11v6h10v-6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Cargos</span>
+        </button>
+
+        <button class="menu-icon" data-menu="empresas">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 20V6l8-3 8 3v14" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M10 10h4M10 14h4" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>Empresas</span>
+        </button>
+
+        <button class="menu-icon" data-menu="salarios">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 7h16v10H4z" stroke-width="1.6"/>
+            <path d="M8 15V9M12 15v-4M16 15v-6" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>Salários</span>
+        </button>
+
+        <button class="menu-icon" data-menu="areas">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="9" stroke-width="1.6"/>
+            <path d="M12 3v6.5L17 12" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Áreas</span>
+        </button>
+
+        <button class="menu-icon" data-menu="monitoramento">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 19h16" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M6 15l3-6 3 4 3-8 3 7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Monitoramento</span>
+        </button>
+      </div>
+
+      <div id="menuPanel" class="mt-4 pt-3 border-t border-slate-100 hidden">
+        <div id="menuPanelContent" class="text-xs text-slate-700 space-y-2">
+        </div>
+      </div>
+    </section>
+
+    <!-- Layout principal -->
+    <main class="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <!-- LISTA DE EX-ALUNOS (agora mais baixa e rolante) -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col max-h-[630px]">
+        <div class="px-4 py-3 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-800">Lista de ex-alunos</h2>
+            <p class="text-xs text-slate-400">Clique em uma linha para ver detalhes.</p>
+          </div>
+          <div class="flex items-center gap-2 w-full md:w-64">
+            <input id="searchInput"
+                   type="text"
+                   placeholder="Buscar por nome..."
+                   class="w-full rounded-full border border-slate-300 px-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Agora com altura limitada e rolagem vertical -->
+        <div class="overflow-x-auto max-h-[550px] overflow-y-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-3 py-2 text-left">
+                  <span class="inline-flex items-center gap-1 text-[11px] text-slate-500">
+                    <input type="checkbox" id="checkAll" class="checkbox-large border-slate-300">
+                    <span>Contato</span>
+                  </span>
+                </th>
+                <th class="px-3 py-2 text-left">NOME</th>
+                <th class="px-3 py-2 text-center">SCORE</th>
+                <th class="px-3 py-2 text-center">EMAIL</th>
+                <th class="px-3 py-2 text-center">WHATSAPP</th>
+              </tr>
+            </thead>
+            <tbody id="peopleBody" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Painel lateral -->
+      <aside class="self-start">
+        <div id="detailCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col min-h-[550px]">
+          <div id="personHeader" class="flex items-center justify-between gap-4 pb-3 border-b border-slate-100"></div>
+
+          <div class="mt-3 text-sm text-slate-700 space-y-2" id="personBio"></div>
+
+          <section class="mt-3 pt-3 border-t border-slate-100 flex flex-col flex-1">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800">Chat de contato</h3>
+                <p class="text-xs text-slate-400">Canal atual: WhatsApp ou E-mail</p>
+              </div>
+              <span id="chatChannelLabel" class="px-2 py-1 rounded-full bg-slate-100 text-[11px] font-medium text-slate-600"></span>
+            </div>
+
+            <div id="chatHistory"
+                 class="flex-1 min-h-[180px] max-h-[180px] overflow-y-auto bg-slate-50 rounded-xl p-3 space-y-2 text-xs">
+            </div>
+
+            <form id="chatForm" class="mt-3 flex items-center gap-2">
+              <input id="chatInput" type="text" placeholder="Escreva uma mensagem..."
+                     class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <button type="submit"
+                      class="focus-ring rounded-lg bg-blue-600 text-xs font-semibold text-white px-3 py-2 hover:bg-blue-700 active:scale-[.99]">
+                Enviar
+              </button>
+            </form>
+          </section>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- FAB Raposa Smart -->
+  <button id="btnRaposaFab"
+    class="raposa-fab focus-ring rounded-full border border-slate-200 bg-white p-3 shadow-lg hover:shadow-xl"
+    title="Falar com a Raposa Smart" aria-label="Falar com a Raposa Smart">
+    <img src="https://cursinhoinsper.org/assets/images/image03.png?v=072e23cf"
+         alt="Raposa Smart"
+         class="h-full w-full object-contain" />
+  </button>
+
+  <!-- Modal Raposa Smart -->
+  <div id="raposaModal" class="modal-backdrop modal-hidden">
+    <div class="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div class="w-full sm:max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900">Raposa Smart — Alumni</h3>
+            <p class="text-[11px] text-slate-500">Perguntas sobre trajetórias, cargos, áreas e contatos.</p>
+          </div>
+          <button class="focus-ring rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm hover:bg-slate-50"
+                  onclick="closeRaposa()">✕</button>
+        </div>
+        <div class="px-4 py-4 space-y-3">
+          <p class="text-sm text-slate-600">
+            Use este campo para testar perguntas que você faria a um assistente de análise de Alumni
+            (trajetória, ascensão, monitoramento, etc.).
+          </p>
+          <div>
+            <label for="raposaPergunta" class="block text-xs font-medium text-slate-600">Sua pergunta</label>
+            <textarea id="raposaPergunta" rows="5"
+                      class="focus-ring mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                      placeholder="Ex.: Quantos ex-alunos tiveram ascensão de cargo e em quais áreas eles atuam?"></textarea>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-3">
+          <button class="focus-ring rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  onclick="closeRaposa()">Cancelar</button>
+          <button class="focus-ring inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+                  onclick="askRaposa()">Enviar pergunta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pessoa -->
+  <div id="personModal" class="modal-backdrop modal-hidden">
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative w-full max-w-3xl rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <button id="personModalClose"
+                class="focus-ring absolute right-3 top-3 rounded-full border border-slate-200 bg-white px-2 py-1 text-xs hover:bg-slate-50">
+          ✕
+        </button>
+
+        <button id="modalPrev"
+                class="focus-ring absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-slate-900/80 text-white w-8 h-8 flex items-center justify-center text-lg hover:bg-slate-900">
+          ‹
+        </button>
+        <button id="modalNext"
+                class="focus-ring absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-slate-900/80 text-white w-8 h-8 flex items-center justify-center text-lg hover:bg-slate-900">
+          ›
+        </button>
+
+        <div class="p-5">
+          <div id="personModalBody" class="flex flex-col md:flex-row gap-6"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] hidden">
+    <div class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg">Ação concluída!</div>
+  </div>
+
+  <script>
+    const basePeople = Array.isArray(window.peopleData) ? window.peopleData : [];
+
+    const companies = ["Aurora Tech", "Insper Labs", "Cursinho+ Educação", "Estúdio Delta", "Impacto Social S/A", "Nova Geração Consultoria"];
+    const areasList = ["Finanças", "Tecnologia", "Educação", "Marketing", "Saúde", "Jurídico"];
+
+    const people = basePeople.map(p => {
+      const hasDegree = Math.random() < 0.55;
+      const unemployed = Math.random() < 0.18;
+      const gotContact = Math.random() < 0.5;
+      const noReturn = Math.random() < 0.3;
+      const ascensao = Math.random() < 0.6;
+
+      const r = Math.random();
+      let cargo = "Ex-aluno(a)";
+      let roleCategory = "Outro";
+
+      if (r < 0.15) {
+        cargo = "Gerente de Projetos";
+        roleCategory = "Gerente";
+      } else if (r < 0.25) {
+        cargo = "Influencer digital";
+        roleCategory = "Influencer";
+      } else if (r < 0.35) {
+        cargo = "CEO de startup";
+        roleCategory = "CEO";
+      } else if (r < 0.55) {
+        cargo = "Analista de dados";
+      } else if (r < 0.75) {
+        cargo = "Estudante universitário";
+      } else {
+        cargo = "Empreendedor";
+        roleCategory = "Empreendedor";
+      }
+
+      const empresa = companies[Math.floor(Math.random() * companies.length)];
+      const area = areasList[Math.floor(Math.random() * areasList.length)];
+      const salario = 3000 + Math.floor(Math.random() * 17000);
+
+      const gender = (p.id % 2 === 0) ? "men" : "women";
+      const idx = p.id % 70;
+      const photoUrl = `https://randomuser.me/api/portraits/${gender}/${idx}.jpg`;
+
+      return {
+        ...p,
+        hasDegree,
+        unemployed,
+        gotContact,
+        noReturn,
+        ascensao,
+        photoUrl,
+        cargo,
+        roleCategory,
+        empresa,
+        area,
+        salario
+      };
+    });
+
+    let activePersonId = people.length > 0 ? people[0].id : null;
+    let activeChannel = "whatsapp";
+    const contacted = {};
+    const messages = {};
+    let searchTerm = "";
+
+    /* ==== KPI helpers ==== */
+    function createVsCard(title, leftLabel, leftValue, rightLabel, rightValue) {
+      const card = document.createElement("div");
+      card.className = "rounded-2xl border border-slate-200 bg-white shadow-sm px-4 py-3 flex flex-col gap-2";
+      card.innerHTML = `
+        <span class="text-[11px] font-medium uppercase tracking-wide text-slate-400">${title}</span>
+        <div class="flex items-baseline justify-between text-xs">
+          <div>
+            <div class="text-[11px] text-slate-400 uppercase tracking-wide">${leftLabel}</div>
+            <div class="text-lg font-semibold text-slate-900">${leftValue}</div>
+          </div>
+          <div class="border-l border-slate-200 h-9 mx-2"></div>
+          <div class="text-right">
+            <div class="text-[11px] text-slate-400 uppercase tracking-wide">${rightLabel}</div>
+            <div class="text-lg font-semibold text-slate-900">${rightValue}</div>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    function createSimpleCard(label, value) {
+      const card = document.createElement("div");
+      card.className = "rounded-2xl border border-slate-200 bg-white shadow-sm px-4 py-3 flex flex-col gap-1";
+      card.innerHTML = `
+        <span class="text-[11px] font-medium uppercase tracking-wide text-slate-400">${label}</span>
+        <span class="text-xl font-semibold text-slate-900">${value}</span>
+      `;
+      return card;
+    }
+
+    function renderKpis() {
+      const kpiContainer = document.getElementById("kpiCards");
+      kpiContainer.innerHTML = "";
+
+      const total = people.length || 1;
+      const gotContactCount = people.filter(p => p.gotContact).length;
+      const noContactCount = total - gotContactCount;
+      const unemployed = people.filter(p => p.unemployed).length;
+      const employed = total - unemployed;
+      const withDegree = people.filter(p => p.hasDegree).length;
+      const withoutDegree = total - withDegree;
+      const ascYes = people.filter(p => p.ascensao).length;
+      const ascNo = total - ascYes;
+
+      const empregCursinho = Math.round(100 * employed / total);
+      const empregBrasil = 72;
+
+      const impactosIndiretos =
+        ascYes +
+        Math.round(gotContactCount * 0.4) +
+        Math.round(withDegree * 0.3);
+
+      // Novos KPIs pedidos
+      const totalAlunos = total;
+      const atualizacoes = total + Math.floor(Math.random() * 50) + 10;
+
+      
+      kpiContainer.appendChild(
+        createVsCard("Contato", "Obtido", gotContactCount, "Não obtido", noContactCount)
+      );
+      kpiContainer.appendChild(
+        createVsCard("Situação profissional", "Empregados", employed, "Desempregados", unemployed)
+      );
+      kpiContainer.appendChild(
+        createVsCard("Faculdade", "Cursaram", withDegree, "Não cursaram", withoutDegree)
+      );
+      kpiContainer.appendChild(
+        createVsCard("Ascensão", "Sim", ascYes, "Não", ascNo)
+      );
+      kpiContainer.appendChild(
+        createVsCard("Taxa de empregabilidade", "Cursinho", empregCursinho + "%", "Brasil", empregBrasil + "%")
+      );
+      kpiContainer.appendChild(
+        createSimpleCard("Impactos indiretos", impactosIndiretos)
+      );
+      kpiContainer.appendChild(createSimpleCard("Total de ex-alunos", totalAlunos));
+      kpiContainer.appendChild(createSimpleCard("Atualizações", atualizacoes));
+
+    }
+
+    /* ==== Menu ícones (toggle) ==== */
+    function getTop5() {
+      return people.slice().sort((a, b) => b.score - a.score).slice(0, 5);
+    }
+
+    function renderMenuPanel(tab) {
+      const panel = document.getElementById("menuPanelContent");
+      panel.innerHTML = "";
+
+      if (tab === "top5") {
+        const title = document.createElement("p");
+        title.className = "text-[11px] font-semibold text-slate-500 uppercase";
+        title.textContent = "Top 5 melhores scores";
+        panel.appendChild(title);
+
+        const list = document.createElement("ol");
+        list.className = "mt-2 space-y-1 text-xs";
+
+        getTop5().forEach((p, idx) => {
+          const li = document.createElement("li");
+          li.className = "flex items-center justify-between gap-2";
+          li.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600">
+                ${idx + 1}
+              </span>
+              <span class="text-slate-800 truncate max-w-[180px]">${p.nome}</span>
+            </div>
+            <span class="text-[11px] font-semibold text-slate-700">${p.score}</span>
+          `;
+          list.appendChild(li);
+        });
+
+        panel.appendChild(list);
+      }
+
+      else if (tab === "cargos") {
+        const map = {};
+        people.forEach(p => {
+          map[p.cargo] = (map[p.cargo] || 0) + 1;
+        });
+        const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+        panel.innerHTML = `<p class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Cargos mais frequentes</p>`;
+        entries.forEach(([cargo, qtd]) => {
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between";
+          row.innerHTML = `
+            <span class="text-slate-800">${cargo}</span>
+            <span class="text-[11px] text-slate-500">${qtd} alumni</span>
+          `;
+          panel.appendChild(row);
+        });
+      }
+
+      else if (tab === "empresas") {
+        const map = {};
+        people.forEach(p => {
+          map[p.empresa] = (map[p.empresa] || 0) + 1;
+        });
+        const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+        panel.innerHTML = `<p class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Empresas mais recorrentes</p>`;
+        entries.forEach(([empresa, qtd]) => {
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between";
+          row.innerHTML = `
+            <span class="text-slate-800">${empresa}</span>
+            <span class="text-[11px] text-slate-500">${qtd} alumni</span>
+          `;
+          panel.appendChild(row);
+        });
+      }
+
+      else if (tab === "salarios") {
+        const sorted = people.slice().sort((a,b)=>b.salario - a.salario).slice(0,8);
+        panel.innerHTML = `<p class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Maiores salários (estimados)</p>`;
+        sorted.forEach(p => {
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between";
+          row.innerHTML = `
+            <span class="text-slate-800 truncate max-w-[180px]">${p.nome}</span>
+            <span class="text-[11px] text-emerald-600 font-semibold">R$ ${p.salario.toLocaleString("pt-BR")}</span>
+          `;
+          panel.appendChild(row);
+        });
+      }
+
+      else if (tab === "areas") {
+        const map = {};
+        people.forEach(p => {
+          map[p.area] = (map[p.area] || 0) + 1;
+        });
+        const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+
+        panel.innerHTML = `<p class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Distribuição por área</p>`;
+        entries.forEach(([area, qtd]) => {
+          const perc = ((qtd / (people.length || 1)) * 100).toFixed(1);
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between";
+          row.innerHTML = `
+            <span class="text-slate-800">${area}</span>
+            <span class="text-[11px] text-slate-500">${qtd} (${perc}%)</span>
+          `;
+          panel.appendChild(row);
+        });
+      }
+
+      else if (tab === "monitoramento") {
+        const semanaAsc = Math.round(people.filter(p=>p.ascensao).length * 0.18) || 1;
+        const semanaTrocas = Math.round(people.length * 0.12) || 1;
+        const semanaPost = Math.round(people.length * 0.3) || 3;
+
+        panel.innerHTML = `
+          <p class="text-[11px] font-semibold text-slate-500 uppercase mb-2">Monitoramento semanal (fake)</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-800">Ascensões de cargo</span>
+              <span class="text-[11px] font-semibold text-emerald-600">+${semanaAsc}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-800">Trocas de empresa</span>
+              <span class="text-[11px] font-semibold text-blue-600">+${semanaTrocas}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-800">Postagens no LinkedIn</span>
+              <span class="text-[11px] font-semibold text-amber-600">${semanaPost}</span>
+            </div>
+          </div>
+          <p class="mt-2 text-[10px] text-slate-400">
+            Números ilustrativos a partir da base atual, apenas para simular um painel de monitoramento.
+          </p>
+        `;
+      }
+    }
+
+    function initMenuIcons() {
+      const buttons = document.querySelectorAll(".menu-icon");
+      const panel = document.getElementById("menuPanel");
+      let activeMenu = null;
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.menu;
+
+          if (activeMenu === key) {
+            activeMenu = null;
+            panel.classList.add("hidden");
+            buttons.forEach(b => b.classList.remove("active"));
+            return;
+          }
+
+          activeMenu = key;
+          buttons.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          renderMenuPanel(key);
+          panel.classList.remove("hidden");
+        });
+      });
+    }
+
+    /* ==== Tabela ==== */
+    function getFilteredPeople() {
+      if (!searchTerm) return people;
+      return people.filter(p =>
+        p.nome.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    function updateRowHighlight(id) {
+      const row = document.querySelector(`tr[data-person-id="${id}"]`);
+      if (!row) return;
+      if (contacted[id]) row.classList.add("row-contacted");
+      else row.classList.remove("row-contacted");
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("peopleBody");
+      tbody.innerHTML = "";
+
+      const rows = getFilteredPeople();
+
+      rows.forEach(person => {
+        const checkedAttr = contacted[person.id] ? "checked" : "";
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 cursor-pointer";
+        tr.dataset.personId = person.id;
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 align-middle">
+            <input type="checkbox"
+                   class="contact-checkbox checkbox-large border-slate-300"
+                   data-person-id="${person.id}"
+                   ${checkedAttr}>
+          </td>
+          <td class="px-3 py-2 align-middle">
+            <div class="flex flex-col">
+              <span class="font-medium text-slate-800">${person.nome}</span>
+              <span class="text-[11px] text-slate-400">ID #${person.id}</span>
+            </div>
+          </td>
+          <td class="px-3 py-2 text-center align-middle font-semibold text-slate-800">
+            ${person.score}
+          </td>
+          <td class="px-3 py-2 text-center align-middle">
+            <button
+              class="relative contact-btn inline-flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs"
+              data-person-id="${person.id}"
+              data-channel="email"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M4 4h16v16H4z" stroke-width="1.5"/>
+                <path d="M4 7l8 5 8-5" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </td>
+          <td class="px-3 py-2 text-center align-middle">
+            <button
+              class="relative contact-btn inline-flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-green-600 text-xs"
+              data-person-id="${person.id}"
+              data-channel="whatsapp"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a9 9 0 00-7.87 13.13L3 22l6.99-1.1A9 9 0 1012 2zM9.5 8.5c-.25-.5-.5-.5-.75-.5h-.63c-.25 0-.63.12-.63.62 0 .5.63 1.25.72 1.38.1.13 1.25 2 3.06 2.75 1.51.6 1.82.48 2.15.45.33-.03 1.06-.43 1.21-.85.15-.43.15-.8.1-.88-.06-.08-.24-.13-.5-.25-.25-.12-1.47-.73-1.7-.81-.22-.08-.38-.12-.54.13-.15.25-.61.81-.75.98-.14.16-.28.18-.54.06-.25-.12-1.05-.39-2-1.24-.74-.65-1.24-1.44-1.38-1.69z"/>
+              </svg>
+            </button>
+          </td>
+        `;
+
+        if (contacted[person.id]) {
+          tr.classList.add("row-contacted");
+        }
+
+        tr.addEventListener("click", (e) => {
+          if (e.target.closest(".contact-btn") || e.target.closest(".contact-checkbox")) return;
+          selectPerson(person.id);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      rows.forEach(person => {
+        const emailBtn = tbody.querySelector(`.contact-btn[data-person-id="${person.id}"][data-channel="email"]`);
+        const whatsBtn = tbody.querySelector(`.contact-btn[data-person-id="${person.id}"][data-channel="whatsapp"]`);
+
+        if (emailBtn && !person.email) {
+          emailBtn.classList.add("no-contact");
+          emailBtn.disabled = true;
+        }
+        if (whatsBtn && !person.whatsapp) {
+          whatsBtn.classList.add("no-contact");
+          whatsBtn.disabled = true;
+        }
+      });
+
+      tbody.querySelectorAll(".contact-checkbox").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const id = Number(cb.dataset.personId);
+          contacted[id] = cb.checked;
+          updateRowHighlight(id);
+        });
+      });
+
+      tbody.querySelectorAll(".contact-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (btn.classList.contains("no-contact")) return;
+          const personId = Number(btn.dataset.personId);
+          const channel = btn.dataset.channel;
+          activePersonId = personId;
+          activeChannel = channel;
+          ensureHistory(personId, channel);
+          renderDetail();
+        });
+      });
+    }
+
+    /* ==== Detalhes + bio ==== */
+    function getPerson(id) {
+      return people.find(p => p.id === id);
+    }
+
+    function generateFakeBio(person) {
+      const cargo = person.cargo || "profissional";
+
+      return `
+        ${person.nome} construiu sua trajetória profissional após passar pelo Cursinho Insper
+        e hoje atua como <strong>${cargo}</strong> na área de ${person.area}, na empresa ${person.empresa}.
+        Participou do cursinho durante o ensino médio, aproveitando os simulados e o apoio da rede de ex-alunos.
+        Ao longo da carreira, desenvolveu competências em liderança, trabalho em equipe e resolução de problemas.
+        Atualmente, ${person.nome.split(" ")[0]} segue aprofundando seus conhecimentos e mantendo contato com o Cursinho.
+      `;
+    }
+
+    function renderDetail() {
+      const person = getPerson(activePersonId);
+      const header = document.getElementById("personHeader");
+      const bio = document.getElementById("personBio");
+
+      if (!person) {
+        header.innerHTML = "<p class='text-xs text-slate-400'>Selecione uma pessoa na tabela.</p>";
+        bio.innerHTML = "";
+        document.getElementById("chatHistory").innerHTML = "";
+        document.getElementById("chatChannelLabel").textContent = "";
+        return;
+      }
+
+      header.innerHTML = `
+        <div class="flex items-center gap-4 flex-1">
+          <img
+            src="${person.photoUrl}"
+            alt="${person.nome}"
+            class="w-14 h-14 rounded-full object-cover border border-slate-200"
+          />
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">${person.nome}</h2>
+            <p class="text-xs text-slate-500">Score: <span class="font-semibold">${person.score}</span></p>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-[11px] text-slate-600">${person.cargo}</span>
+              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-[11px] text-slate-600">${person.empresa}</span>
+            </div>
+          </div>
+        </div>
+        <button id="zoomPerson"
+                class="focus-ring inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-100">
+          🔍 Ver em detalhe
+        </button>
+      `;
+
+      bio.innerHTML = `<p class="leading-relaxed text-xs md:text-sm text-slate-700">${generateFakeBio(person)}</p>`;
+
+      const zoomBtn = document.getElementById("zoomPerson");
+      if (zoomBtn) {
+        zoomBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openPersonModal();
+        });
+      }
+
+      renderChat();
+    }
+
+    /* ==== Chat por pessoa ==== */
+    function ensureHistory(personId, channel) {
+      if (!messages[personId]) {
+        messages[personId] = { email: [], whatsapp: [] };
+      }
+      if (!messages[personId][channel] || messages[personId][channel].length === 0) {
+        const firstName = (getPerson(personId)?.nome || "").split(" ")[0] || "Alumni";
+        if (channel === "whatsapp") {
+          messages[personId][channel].push(
+            { from: "alumni", text: `Oi! Aqui é ${firstName}. Tudo bem?` },
+            { from: "user", text: "Olá! Gostaria de saber mais sobre sua trajetória depois do cursinho." }
+          );
+        } else {
+          messages[personId][channel].push(
+            { from: "user", text: "Olá! Escrevo em nome do Cursinho Insper para manter nosso contato atualizado." },
+            { from: "alumni", text: "Oi! Que legal, posso ajudar sim :)" }
+          );
+        }
+      }
+    }
+
+    function renderChat() {
+      if (!activePersonId) return;
+      ensureHistory(activePersonId, activeChannel);
+
+      const channelLabel = document.getElementById("chatChannelLabel");
+      channelLabel.textContent = activeChannel === "whatsapp" ? "Canal: WhatsApp" : "Canal: E-mail";
+
+      const historyEl = document.getElementById("chatHistory");
+      historyEl.innerHTML = "";
+
+      const msgs = messages[activePersonId][activeChannel];
+
+      msgs.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = `max-w-[80%] px-3 py-2 rounded-2xl text-[11px] leading-snug flex ${
+          msg.from === "user" ? "bubble-out ml-auto" : "bubble-in mr-auto"
+        }`;
+        div.textContent = msg.text;
+        historyEl.appendChild(div);
+      });
+
+      historyEl.scrollTop = historyEl.scrollHeight;
+    }
+
+    document.getElementById("chatForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!activePersonId) return;
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      messages[activePersonId][activeChannel].push({ from: "user", text });
+      messages[activePersonId][activeChannel].push({
+        from: "alumni",
+        text: "Legal! Vamos seguir conversando, qualquer dúvida é só mandar."
+      });
+
+      input.value = "";
+      renderChat();
+      renderModalChat();
+    });
+
+    function selectPerson(id) {
+      activePersonId = id;
+      renderDetail();
+
+      const tbody = document.getElementById("peopleBody");
+      tbody.querySelectorAll("tr").forEach(tr => {
+        if (Number(tr.dataset.personId) === id) {
+          tr.classList.add("bg-slate-50");
+        } else {
+          tr.classList.remove("bg-slate-50");
+        }
+      });
+    }
+
+    document.getElementById("checkAll").addEventListener("change", (e) => {
+      const checked = e.target.checked;
+      document.querySelectorAll(".contact-checkbox").forEach(cb => {
+        cb.checked = checked;
+        const id = Number(cb.dataset.personId);
+        contacted[id] = checked;
+        updateRowHighlight(id);
+      });
+    });
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchTerm = e.target.value || "";
+      renderTable();
+    });
+
+    /* ==== Modal pessoa ==== */
+    const personModal = document.getElementById("personModal");
+    const personModalClose = document.getElementById("personModalClose");
+    const modalPrev = document.getElementById("modalPrev");
+    const modalNext = document.getElementById("modalNext");
+
+    function renderModalPerson() {
+      const container = document.getElementById("personModalBody");
+      const person = getPerson(activePersonId);
+      if (!person) {
+        container.innerHTML = "<p class='text-xs text-slate-500'>Nenhuma pessoa selecionada.</p>";
+        return;
+      }
+
+      ensureHistory(activePersonId, activeChannel);
+
+      container.innerHTML = `
+        <div class="flex flex-col items-center md:items-start md:w-1/3 gap-3">
+          <img src="${person.photoUrl}" alt="${person.nome}"
+               class="w-24 h-24 rounded-full object-cover border border-slate-200" />
+          <div class="text-center md:text-left">
+            <h2 class="text-base font-semibold text-slate-900">${person.nome}</h2>
+            <p class="text-xs text-slate-500">Score: <span class="font-semibold">${person.score}</span></p>
+            <p class="mt-1 text-[11px] text-slate-500">${person.cargo} • ${person.empresa}</p>
+          </div>
+        </div>
+
+        <div class="md:w-2/3 flex flex-col gap-3">
+          <div class="text-xs md:text-sm text-slate-700 leading-relaxed">
+            ${generateFakeBio(person)}
+          </div>
+
+          <div class="border-t border-slate-100 pt-3 flex flex-col h-64">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-semibold text-slate-800">Chat de contato</h3>
+              <span class="px-2 py-1 rounded-full bg-slate-100 text-[11px] font-medium text-slate-600">
+                ${activeChannel === "whatsapp" ? "Canal: WhatsApp" : "Canal: E-mail"}
+              </span>
+            </div>
+            <div id="modalChatHistory"
+                 class="flex-1 overflow-y-auto bg-slate-50 rounded-xl p-3 space-y-2 text-xs">
+            </div>
+            <form id="modalChatForm" class="mt-2 flex items-center gap-2">
+              <input id="modalChatInput" type="text"
+                     class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                     placeholder="Escreva uma mensagem...">
+              <button type="submit"
+                      class="focus-ring rounded-lg bg-blue-600 text-xs font-semibold text-white px-3 py-2 hover:bg-blue-700 active:scale-[.99]">
+                Enviar
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      renderModalChat();
+
+      const form = document.getElementById("modalChatForm");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (!activePersonId) return;
+        const input = document.getElementById("modalChatInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        messages[activePersonId][activeChannel].push({ from: "user", text });
+        messages[activePersonId][activeChannel].push({
+          from: "alumni",
+          text: "Mensagem recebida! Obrigado por entrar em contato."
+        });
+
+        input.value = "";
+        renderChat();
+        renderModalChat();
+      });
+    }
+
+    function renderModalChat() {
+      const historyEl = document.getElementById("modalChatHistory");
+      if (!historyEl || !activePersonId) return;
+      ensureHistory(activePersonId, activeChannel);
+
+      const msgs = messages[activePersonId][activeChannel];
+      historyEl.innerHTML = "";
+
+      msgs.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = `max-w-[80%] px-3 py-2 rounded-2xl text-[11px] leading-snug flex ${
+          msg.from === "user" ? "bubble-out ml-auto" : "bubble-in mr-auto"
+        }`;
+        div.textContent = msg.text;
+        historyEl.appendChild(div);
+      });
+
+      historyEl.scrollTop = historyEl.scrollHeight;
+    }
+
+    function openPersonModal() {
+      if (!activePersonId) return;
+      renderModalPerson();
+      personModal.classList.remove("modal-hidden");
+    }
+
+    function closePersonModal() {
+      personModal.classList.add("modal-hidden");
+    }
+
+    personModalClose.addEventListener("click", closePersonModal);
+
+    modalPrev.addEventListener("click", () => {
+      if (!people.length) return;
+      const idx = people.findIndex(p => p.id === activePersonId);
+      const prevIdx = (idx - 1 + people.length) % people.length;
+      activePersonId = people[prevIdx].id;
+      renderDetail();
+      renderModalPerson();
+    });
+
+    modalNext.addEventListener("click", () => {
+      if (!people.length) return;
+      const idx = people.findIndex(p => p.id === activePersonId);
+      const nextIdx = (idx + 1) % people.length;
+      activePersonId = people[nextIdx].id;
+      renderDetail();
+      renderModalPerson();
+    });
+
+    /* ==== Raposa Smart ==== */
+    const raposaModal = document.getElementById('raposaModal');
+    const btnRaposaFab = document.getElementById('btnRaposaFab');
+    const raposaPergunta = document.getElementById('raposaPergunta');
+
+    btnRaposaFab?.addEventListener('click', () => {
+      raposaPergunta.value = '';
+      raposaModal.classList.remove('modal-hidden');
+      raposaPergunta.focus();
+    });
+    function closeRaposa() { raposaModal.classList.add('modal-hidden'); }
+    window.closeRaposa = closeRaposa;
+
+    function readAlumniKpisSnapshot() {
+      const map = {};
+      document.querySelectorAll('#kpiCards > div').forEach(card => {
+        const keyEl = card.querySelector('span.text-[11px]');
+        const valEl = card.querySelector('span.text-xl, div.text-lg');
+        const key = keyEl?.textContent?.trim();
+        const val = valEl?.textContent?.trim();
+        if (key) map[key] = val || '';
+      });
+      return map;
+    }
+
+    function askRaposa() {
+      const pergunta = (raposaPergunta.value || '').trim();
+      if (!pergunta){ alert('Digite sua pergunta para a Raposa Smart.'); raposaPergunta.focus(); return; }
+
+      const pessoaAtual = getPerson(activePersonId) || null;
+
+      const payloadAsk = {
+        pergunta,
+        arquivo: "alumni",
+        pessoa_atual: pessoaAtual ? {
+          id: pessoaAtual.id,
+          nome: pessoaAtual.nome,
+          cargo: pessoaAtual.cargo,
+          empresa: pessoaAtual.empresa,
+          area: pessoaAtual.area,
+          score: pessoaAtual.score,
+          ascensao: pessoaAtual.ascensao
+        } : null,
+        kpis: readAlumniKpisSnapshot()
+      };
+
+      console.log('Pergunta para Raposa Smart (Alumni):', payloadAsk);
+
+      showToast('Pergunta enviada à Raposa Smart!');
+      closeRaposa();
+    }
+    window.askRaposa = askRaposa;
+
+    function showToast(texto){
+      const toast = document.getElementById('toast');
+      toast.querySelector('div').textContent = texto || 'OK';
+      toast.classList.remove('hidden');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.add('hidden'), 2000);
+    }
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Escape'){
+        closeRaposa();
+        closePersonModal();
+      }
+    });
+
+    /* ==== Init ==== */
+    renderKpis();
+    renderTable();
+    initMenuIcons();
+    if (activePersonId !== null) {
+      selectPerson(activePersonId);
+    } else {
+      renderDetail();
+    }
+  </script>
+</body>
+</html>
