@@ -885,7 +885,95 @@ def dashboard_marketing():
                            erro=None)
 
 
-# ===================== PERFIL ACADÊMICO =====================
+
+# ===================== PERFIL ACADÊMICO 
+# =====================
+
+def load_alumni_from_excel():
+    """
+    Lê o arquivo 'arquivos/Formulário Perfil Acadêmico.xlsx'
+    e devolve uma lista de dicts no formato esperado pelo front:
+    id, nome, email, whatsapp, score
+    """
+    # caminho: <pasta_do_app>/arquivos/Formulário Perfil Acadêmico.xlsx
+    excel_path = Path(app.root_path) / "arquivos" / "Formulário Perfil Acadêmico.xlsx"
+
+    if not excel_path.exists():
+        print(f"[AVISO] Arquivo não encontrado: {excel_path}")
+        return []
+
+    # Lê o Excel
+    df = pd.read_excel(excel_path)
+
+    # Normaliza nomes das colunas (para achar por pedaço do nome)
+    col_map = {c.strip().lower(): c for c in df.columns}
+
+    def achar_coluna(fragmento):
+        fragmento = fragmento.lower()
+        for k, original in col_map.items():
+            if fragmento in k:
+                return original
+        return None
+
+    # tenta achar as colunas mais prováveis
+    nome_col = achar_coluna("nome completo")
+    email_col = achar_coluna("email")
+    telefone_col = achar_coluna("telefone") or achar_coluna("whats")
+    desempenho_col = achar_coluna("desempenho nos simulados")
+
+    people = []
+
+    for idx, row in df.iterrows():
+        # id sequencial
+        pid = int(idx) + 1
+
+        # nome
+        if nome_col and not pd.isna(row.get(nome_col, None)):
+            nome = str(row[nome_col]).strip()
+        else:
+            nome = f"Aluno {pid}"
+
+        # email
+        if email_col and not pd.isna(row.get(email_col, None)):
+            email = str(row[email_col]).strip()
+        else:
+            email = ""
+
+        # whatsapp / telefone
+        if telefone_col and not pd.isna(row.get(telefone_col, None)):
+            whatsapp = str(row[telefone_col]).strip()
+        else:
+            whatsapp = ""
+
+        # score: mapeia a resposta de desempenho para um número (bem simples)
+        score = 70
+        if desempenho_col and not pd.isna(row.get(desempenho_col, None)):
+            txt = str(row[desempenho_col]).strip().lower()
+            if "excelente" in txt or "ótimo" in txt:
+                score = 95
+            elif "bom" in txt:
+                score = 85
+            elif "regular" in txt or "mediano" in txt:
+                score = 75
+            elif "ruim" in txt or "baixo" in txt:
+                score = 60
+
+        people.append({
+            "id": pid,
+            "nome": nome,
+            "email": email,
+            "whatsapp": whatsapp,
+            "score": score,
+        })
+
+    return people
+
+@app.route("/ex-alunos")
+def ex_alunos():
+    people = load_alumni_from_excel()
+    return render_template("ex-alunos.html", people=people)
+
+
 
 def _simple_counts(series):
     """Retorna labels e counts limpos de uma Series categórica."""
